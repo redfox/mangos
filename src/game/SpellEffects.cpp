@@ -1245,8 +1245,7 @@ void Spell::EffectDummy(uint32 i)
                 // Bloodthirst
                 case 23881:
                 {
-                    int32 heal = int32(m_caster->GetMaxHealth() / 100);
-					m_caster->CastCustomSpell(unitTarget, 23885, &heal, NULL, NULL, true, NULL);
+					m_caster->CastCustomSpell(unitTarget, 23885, &damage, NULL, NULL, true, NULL);
                     return;
                 }
             }
