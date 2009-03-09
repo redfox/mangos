@@ -4801,13 +4801,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     unitTarget->HandleEmoteCommand(EMOTE_STATE_DANCE);
                     return;
 				}
-				// Escape artist
-				case 20589:
-				{
-					m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
-					m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);
-					return;
-                }
                 // Escape artist
                 case 20589:
                 {
