@@ -2756,7 +2756,7 @@ void Spell::EffectEnergize(uint32 i)
 		if(unitTarget->GetTypeId() == TYPEID_PLAYER)
 		{
 			PlayerClassLevelInfo classInfo;
-			bjmgr.GetPlayerClassLevelInfo(unitTarget->getClass(),unitTarget->getLevel(),&classInfo);
+			objmgr.GetPlayerClassLevelInfo(unitTarget->getClass(),unitTarget->getLevel(),&classInfo);
 			damage *= classInfo.basemana / 100;
 		}
 	}
