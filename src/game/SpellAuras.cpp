@@ -2140,6 +2140,16 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             }
         }
+		
+		// Living Bomb
+		if(m_spellProto->SpellIconID == 3000 && m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE)
+		{
+			if(!m_target)
+				return;
+			
+			m_target->CastSpell(m_target, m_spellProto->EffectBasePoints[1], false);
+			return;
+		}
 
         if (caster && m_removeMode == AURA_REMOVE_BY_DEATH)
         {
@@ -2314,6 +2324,21 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 ((Player*)m_target)->AddSpellMod(m_spellmod, apply);
                 return;
             }
+			//Druid, Survival Instincts
+			if(GetSpellProto()->SpellIconID == 3707 && GetSpellProto()->SpellVisual[0] == 2758)
+			{
+				if(!m_target)
+					return;
+					
+				if(apply)
+				{
+					int32 bp0 = int32(m_target->GetMaxHealth() * m_modifier.m_amount / 100);
+					m_target->CastCustomSpell(m_target, 50322, &bp0, NULL, NULL, true);
+				}
+				else if(!apply && m_removeMode != AURA_REMOVE_BY_DEFAULT)
+					m_target-> RemoveAurasDueToSpell(50322);
+				return;
+			}
             break;
         }
         case SPELLFAMILY_HUNTER:
@@ -5956,6 +5981,17 @@ void Aura::PeriodicTick()
                 break;
 
             int32 drain_amount = m_target->GetPower(power) > pdamage ? pdamage : m_target->GetPower(power);
+			
+			SkillLineAbilityMap::const_iterator const skillLine = spellmgr.GetBeginSkillLineAbilityMap(GetSpellProto()->Id);
+			if(skillLine->second->skillId == SKILL_AFFLICTION || skillLine->second->skillId == SKILL_MARKSMANSHIP)
+			{
+				uint32 drain = m_target->GetMaxPower(power) * drain_amount /100;
+				
+				if(drain > GetCaster()->GetMaxPower(power) * drain_amount / 50)
+					drain_amount = GetCaster()->GetMaxPower(power) * drain_amount / 50;
+				else
+					drain_amount = drain;
+			}
 
             // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
             if (power == POWER_MANA && m_target->GetTypeId() == TYPEID_PLAYER)

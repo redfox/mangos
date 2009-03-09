@@ -369,7 +369,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                     damage = uint32(damage * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK)) / 100);
                 }
                 // Shield Slam
-                else if(m_spellInfo->SpellFamilyFlags & 0x100000000LL)
+                else if(m_spellInfo->SpellFamilyFlags & 0x0000020000000000LL)
                     damage += int32(m_caster->GetShieldBlockValue());
                 // Victory Rush
                 else if(m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
@@ -1245,7 +1245,8 @@ void Spell::EffectDummy(uint32 i)
                 // Bloodthirst
                 case 23881:
                 {
-                    m_caster->CastCustomSpell(unitTarget, 23885, &damage, NULL, NULL, true, NULL);
+                    int32 heal = int32(m_caster->GetMaxHealth() / 100);
+					m_caster->CastCustomSpell(unitTarget, 23885, &heal, NULL, NULL, true, NULL);
                     return;
                 }
             }
@@ -2263,6 +2264,15 @@ void Spell::EffectPowerDrain(uint32 i)
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
     uint32 power = damage;
+	
+	SkillLineAbilityMap::const_iterator const skillLine = spellmgr.GetBeginSkillLineAbilityMap(m_spellInfo->Id);
+	if(skillLine->second->skillId == SKILL_DISCIPLINE)
+	{
+		power = unitTarget->GetMaxPower(powertype) * damage /100;
+		
+		if(power > GetCaster()->GetMaxPower(powertype) * damage / 50)
+			power = GetCaster()->GetMaxPower(powertype) * damage / 50;
+	}
     if ( drain_power == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
         power -= ((Player*)unitTarget)->GetSpellCritDamageReduction(power);
 
@@ -2737,6 +2747,17 @@ void Spell::EffectEnergize(uint32 i)
         default:
             break;
     }
+	
+	// Judgement of Wisdom custom case
+	if(m_spellInfo->Id == 20268)
+	{
+		if(unitTarget->GetTypeId() == TYPEID_PLAYER)
+		{
+			PlayerClassLevelInfo classInfo;
+			bjmgr.GetPlayerClassLevelInfo(unitTarget->getClass(),unitTarget->getLevel(),&classInfo);
+			damage *= classInfo.basemana / 100;
+		}
+	}
 
     if (level_diff > 0)
         damage -= multiplier * level_diff;
@@ -4321,7 +4342,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                     spell_bonus += m_caster->CalculateDamage (OFF_ATTACK, normalized);
             }
             // Devastate bonus and sunder armor refresh
-            else if(m_spellInfo->SpellVisual[0] == 671 && m_spellInfo->SpellIconID == 1508)
+            else if(m_spellInfo->SpellVisual[0] == 12295 && m_spellInfo->SpellIconID == 1508)
             {
                 uint32 stack = 0;
                 // Need refresh all Sunder Armor auras from this caster
@@ -4348,7 +4369,7 @@ void Spell::EffectWeaponDmg(uint32 i)
             if(m_spellInfo->SpellFamilyFlags & 0x00000200LL)
             {
                 customBonusDamagePercentMod = true;
-                bonusDamagePercentMod = 2.5f;               // 250%
+                bonusDamagePercentMod = 2.75f;               // 275%
             }
             // Mutilate (for each hand)
             else if(m_spellInfo->SpellFamilyFlags & 0x600000000LL)
@@ -4778,6 +4799,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     unitTarget->HandleEmoteCommand(EMOTE_STATE_DANCE);
                     break;
                 }
+				// Escape artist
+				case 20589:
+				{
+					if(!m_caster)
+						return;
+					m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
+					m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);
+					 break;
+				}
                 // Mirren's Drinking Hat
                 case 29830:
                 {
