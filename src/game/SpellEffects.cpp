@@ -4814,7 +4814,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
                     m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);
                     return;
->>>>>>> dad016b0fa691a4bc7078b42b1c6c84f4f6955ea:src/game/SpellEffects.cpp
                 }
                 // Mirren's Drinking Hat
                 case 29830:
