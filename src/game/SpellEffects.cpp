@@ -4791,7 +4791,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         unitTarget->CastSpell(unitTarget, 25863, false);
                     else
                         unitTarget->CastSpell(unitTarget, 26655, false);
-                    break;
+                    return;
                 }
                 // Piccolo of the Flaming Fire
                 case 17512:
@@ -4799,17 +4799,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
                     unitTarget->HandleEmoteCommand(EMOTE_STATE_DANCE);
-                    break;
-                }
+                    return;
+				}
 				// Escape artist
 				case 20589:
 				{
-					if(!m_caster)
-						return;
 					m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
 					m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);
-					 break;
-				}
+					return;
+                }
                 // Mirren's Drinking Hat
                 case 29830:
                 {
