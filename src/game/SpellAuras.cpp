@@ -2140,16 +2140,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             }
         }
-		
-		// Living Bomb
-		if(m_spellProto->SpellIconID == 3000 && m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE)
-		{
-			if(!m_target)
-				return;
-			
-			m_target->CastSpell(m_target, m_spellProto->EffectBasePoints[1], false);
-			return;
-		}
 
         if (caster && m_removeMode == AURA_REMOVE_BY_DEATH)
         {
