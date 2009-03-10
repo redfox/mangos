@@ -3568,6 +3568,9 @@ void Spell::TriggerSpell()
 
 uint8 Spell::CanCast(bool strict)
 {
+	// Ebonweave
+	if(m_spellInfo->Id==56002 && m_caster->GetAreaId()==4167) return 0;
+	
     // check cooldowns to prevent cheating
     if(m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->HasSpellCooldown(m_spellInfo->Id))
     {
