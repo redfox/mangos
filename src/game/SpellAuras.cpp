@@ -2417,8 +2417,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         SpellAreaForAreaMapBounds saBounds = spellmgr.GetSpellAreaForAuraMapBounds(GetId());
         if(saBounds.first != saBounds.second)
         {
-            uint32 zone = m_target->GetZoneId();
-            uint32 area = m_target->GetAreaId();
+            uint32 zone, area;
+            m_target->GetZoneAndAreaId(zone,area);
 
             for(SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
             {
@@ -6718,8 +6718,8 @@ void Aura::HandlePhase(bool apply, bool Real)
             SpellAreaForAreaMapBounds saBounds = spellmgr.GetSpellAreaForAuraMapBounds(GetId());
             if(saBounds.first != saBounds.second)
             {
-                uint32 zone = m_target->GetZoneId();
-                uint32 area = m_target->GetAreaId();
+                uint32 zone, area;
+                m_target->GetZoneAndAreaId(zone,area);
 
                 for(SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
                 {
