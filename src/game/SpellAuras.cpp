@@ -2314,6 +2314,16 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 ((Player*)m_target)->AddSpellMod(m_spellmod, apply);
                 return;
             }
+			// Savage Roar
+			if(m_spellProto->SpellIconID == 2865 && m_spellProto->SpellFamilyName == SPELLFAMILY_DRUID)
+			{
+				 caster = GetCaster();
+				 if(!caster)
+					return;
+					
+				caster->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_PCT, float(m_modifier.m_amount), apply);
+				return;
+			}
 			//Druid, Survival Instincts
 			if(GetSpellProto()->SpellIconID == 3707 && GetSpellProto()->SpellVisual[0] == 2758)
 			{
