@@ -2303,9 +2303,8 @@ void Spell::EffectPowerDrain(uint32 i)
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
     uint32 power = damage;
-	
-    if ( drain_power == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
-        power -= ((Player*)unitTarget)->GetSpellCritDamageReduction(power);
+	if ( drain_power == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
+		power -= ((Player*)unitTarget)->GetSpellCritDamageReduction(power);
 
     int32 new_damage;
     if(curPower < power)
@@ -2412,17 +2411,7 @@ void Spell::EffectPowerBurn(uint32 i)
     int32 curPower = int32(unitTarget->GetPower(powertype));
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
-    uint32 power = damage;
-	
-	SkillLineAbilityMap::const_iterator const skillLine = spellmgr.GetBeginSkillLineAbilityMap(m_spellInfo->Id);
-	if(skillLine->second->skillId == SKILL_DISCIPLINE)
-	{
-		power = unitTarget->GetMaxPower(powertype) * damage /100;
-		
-		if(power > GetCaster()->GetMaxPower(powertype) * damage / 50)
-			power = GetCaster()->GetMaxPower(powertype) * damage / 50;
-	}
-	
+    uint32 power = damage;	
     if ( powertype == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
         power -= ((Player*)unitTarget)->GetSpellCritDamageReduction(power);
 
@@ -2788,16 +2777,6 @@ void Spell::EffectEnergize(uint32 i)
         default:
             break;
     }
-	
-	// Judgement of Wisdom custom case
-	if(m_spellInfo->Id == 20268)
-	{
-		if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-		{
-			uint32 basemana = ((Player*)unitTarget)->GetCreateMana();
-			damage *= basemana / 100;
-		}
-	}
 
     if (level_diff > 0)
         damage -= multiplier * level_diff;
