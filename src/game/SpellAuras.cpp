@@ -2338,25 +2338,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             }
 			
-            // Idol of the Emerald Queen
-            if ( GetId() == 34246 && m_target->GetTypeId()==TYPEID_PLAYER )
-            {
-                if(apply)
-                {
-                    SpellModifier *mod = new SpellModifier;
-                    mod->op = SPELLMOD_DOT;
-                    mod->value = m_modifier.m_amount/7;
-                    mod->type = SPELLMOD_FLAT;
-                    mod->spellId = GetId();
-                    mod->mask = 0x001000000000LL;
-                    mod->mask2= 0LL;
-
-                    m_spellmod = mod;
-                }
-
-                ((Player*)m_target)->AddSpellMod(m_spellmod, apply);
-                return;
-            }
 			// Savage Roar
 			if(m_spellProto->SpellIconID == 2865 && m_spellProto->SpellFamilyName == SPELLFAMILY_DRUID)
 			{
@@ -4754,11 +4735,7 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
         case 28726:                                         // Nightmare Seed ( Nightmare Seed )
         case 34511:                                         // Valor (Bulwark of Kings, Bulwark of the Ancient Kings)
         case 44055:                                         // Tremendous Fortitude (Battlemaster's Alacrity)
-<<<<<<< HEAD:src/game/SpellAuras.cpp
-		case 50322:                                         // Druid Survival Instincts
-=======
         case 50322:                                         // Survival Instincts
->>>>>>> 9a5e9413cef438edcbfbdc046bfa414b07c229a3:src/game/SpellAuras.cpp
         {
             if(Real)
             {
