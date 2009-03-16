@@ -2333,6 +2333,11 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
 				if(!m_target)
 					return;
 					
+				if(m_target->m_form != FORM_CAT ||
+					m_target->m_form != FORM_BEAR ||
+					m_target->m_form != FORM_DIREBEAR)
+					return;
+					
 				if(apply)
 				{
 					int32 bp0 = int32(m_target->GetMaxHealth() * m_modifier.m_amount / 100);
