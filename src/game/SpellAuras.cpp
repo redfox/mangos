@@ -2259,6 +2259,45 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         }
         case SPELLFAMILY_DRUID:
         {
+            switch(GetId())
+            {
+                case 34246:                                 // Idol of the Emerald Queen
+                {
+                    if (m_target->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if(apply)
+                    {
+                        SpellModifier *mod = new SpellModifier;
+                        mod->op = SPELLMOD_DOT;
+                        mod->value = m_modifier.m_amount/7;
+                        mod->type = SPELLMOD_FLAT;
+                        mod->spellId = GetId();
+                        mod->mask = 0x001000000000LL;
+                        mod->mask2= 0LL;
+
+                        m_spellmod = mod;
+                    }
+
+                    ((Player*)m_target)->AddSpellMod(m_spellmod, apply);
+                    return;
+                }
+                case 61336:                                 // Survival Instincts
+                {
+                    if(apply)
+                    {
+                        if (!m_target->IsInFeralForm())
+                            return;
+
+                        int32 bp0 = int32(m_target->GetMaxHealth() * m_modifier.m_amount / 100);
+                        m_target->CastCustomSpell(m_target, 50322, &bp0, NULL, NULL, true);
+                    }
+                    else
+                        m_target-> RemoveAurasDueToSpell(50322);
+                    return;
+                }
+            }
+
             // Lifebloom
             if ( GetSpellProto()->SpellFamilyFlags & 0x1000000000LL )
             {
@@ -2298,6 +2337,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 ((Player*)m_target)->UpdateAttackPowerAndDamage();
                 return;
             }
+			
             // Idol of the Emerald Queen
             if ( GetId() == 34246 && m_target->GetTypeId()==TYPEID_PLAYER )
             {
@@ -2325,26 +2365,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
 					return;
 					
 				caster->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_PCT, float(m_modifier.m_amount), apply);
-				return;
-			}
-			//Druid, Survival Instincts
-			if(GetSpellProto()->SpellIconID == 3707 && GetSpellProto()->SpellVisual[0] == 2758)
-			{
-				if(!m_target)
-					return;
-					
-				if(m_target->m_form != FORM_CAT ||
-					m_target->m_form != FORM_BEAR ||
-					m_target->m_form != FORM_DIREBEAR)
-					return;
-					
-				if(apply)
-				{
-					int32 bp0 = int32(m_target->GetMaxHealth() * m_modifier.m_amount / 100);
-					m_target->CastCustomSpell(m_target, 50322, &bp0, NULL, NULL, true);
-				}
-				else if(!apply && m_removeMode != AURA_REMOVE_BY_DEFAULT)
-					m_target-> RemoveAurasDueToSpell(50322);
 				return;
 			}
             break;
@@ -3370,7 +3390,7 @@ void Aura::HandleAuraModDisarm(bool apply, bool Real)
         return;
 
     // main-hand attack speed already set to special value for feral form already and don't must change and reset at remove.
-    if (((Player *)m_target)->IsInFeralForm())
+    if (m_target->IsInFeralForm())
         return;
 
     if (apply)
@@ -4734,7 +4754,11 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
         case 28726:                                         // Nightmare Seed ( Nightmare Seed )
         case 34511:                                         // Valor (Bulwark of Kings, Bulwark of the Ancient Kings)
         case 44055:                                         // Tremendous Fortitude (Battlemaster's Alacrity)
+<<<<<<< HEAD:src/game/SpellAuras.cpp
 		case 50322:                                         // Druid Survival Instincts
+=======
+        case 50322:                                         // Survival Instincts
+>>>>>>> 9a5e9413cef438edcbfbdc046bfa414b07c229a3:src/game/SpellAuras.cpp
         {
             if(Real)
             {
