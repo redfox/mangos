@@ -329,9 +329,6 @@ class MANGOS_DLL_SPEC Group
         void UnbindInstance(uint32 mapid, uint8 difficulty, bool unload = false);
         InstanceGroupBind* GetBoundInstance(uint32 mapid, uint8 difficulty);
         BoundInstancesMap& GetBoundInstances(uint8 difficulty) { return m_boundInstances[difficulty]; }
-
-		// FG::HACK
-		void BroadcastGroupUpdate(void);
 		
     protected:
         bool _addMember(const uint64 &guid, const char* name, bool isAssistant=false);

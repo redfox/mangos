@@ -200,8 +200,6 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recv_data*/ )
 
     GetPlayer()->SetGroup(group, subgroup);
 	
-	//FG::HACK
-	group->BroadcastGroupUpdate();
 }
 
 void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recv_data*/ )
