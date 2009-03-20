@@ -4944,9 +4944,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         player->learnSpell(discoveredSpell,false);
                     return;
                 }
-				// Ebonweave
-					if(m_spellInfo->Id==56002 && m_caster->GetAreaId()==4167)
-					return;
             }
             break;
         }
