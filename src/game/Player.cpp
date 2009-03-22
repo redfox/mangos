@@ -4539,7 +4539,7 @@ float Player::GetDodgeFromAgility()
     float dodge_base[MAX_CLASSES] = {
          0.0075f,   // Warrior
          0.00652f,  // Paladin
-        -0.0545f,   // Hunter
+        -0.00545f,   // Hunter
         -0.0059f,   // Rogue
          0.03183f,  // Priest
          0.0114f,   // DK
