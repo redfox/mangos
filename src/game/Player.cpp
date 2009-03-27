@@ -15368,7 +15368,6 @@ void Player::SaveToDB()
     _SaveSpellCooldowns();
     _SaveActions();
     _SaveAuras();
-	CharacterDatabase.CommitTransaction();
     m_achievementMgr.SaveToDB();
     m_reputationMgr.SaveToDB();
 
