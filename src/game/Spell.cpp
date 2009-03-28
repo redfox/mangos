@@ -3714,10 +3714,6 @@ void Spell::TriggerSpell()
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
-	// Ebonweave
-	if(m_spellInfo->Id==56002 && m_caster->GetAreaId()==4167)
-		return SPELL_CAST_OK;
-		
 	// Web Wrap
 	if(m_spellInfo->Id==28622 && m_caster->GetMapId()==533)
 		return SPELL_CAST_OK;
