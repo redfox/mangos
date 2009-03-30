@@ -6389,7 +6389,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                     }
                     // percent stored in effect 1 (class scripts) base points
                     int32 cost = originalSpell->manaCost + originalSpell->ManaCostPercentage * GetCreateMana() / 100;
-                    basepoints0 = cost*(auraSpellInfo->EffectBasePoints[1]+1)/100;
+                    basepoints0 = cost*auraSpellInfo->CalculateSimpleValue(1)/100;
                     trigger_spell_id = 20272;
                     target = this;
                 }
@@ -7392,6 +7392,16 @@ Unit* Unit::GetCharm() const
     }
 
     return NULL;
+}
+
+float Unit::GetCombatDistance( const Unit* target ) const
+{
+    float radius = target->GetFloatValue(UNIT_FIELD_COMBATREACH) + GetFloatValue(UNIT_FIELD_COMBATREACH);
+    float dx = GetPositionX() - target->GetPositionX();
+    float dy = GetPositionY() - target->GetPositionY();
+    float dz = GetPositionZ() - target->GetPositionZ();
+    float dist = sqrt((dx*dx) + (dy*dy) + (dz*dz)) - radius;
+    return ( dist > 0 ? dist : 0);
 }
 
 void Unit::SetPet(Pet* pet)
