@@ -6809,6 +6809,7 @@ void Aura::HandleAllowOnlyAbility(bool apply, bool Real)
 	m_target->UpdateDamagePhysical(BASE_ATTACK);
 	m_target->UpdateDamagePhysical(RANGED_ATTACK);
 	m_target->UpdateDamagePhysical(OFF_ATTACK);
+}
 	
 void Aura::UnregisterSingleCastAura()
 {
