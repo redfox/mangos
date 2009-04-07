@@ -100,7 +100,7 @@ bool BattleGroundQueue::SelectionPool::KickGroup(uint32 size)
     GroupsQueueType::iterator groupToKick = SelectedGroups.begin();
     for (GroupsQueueType::iterator itr = groupToKick; itr != SelectedGroups.end(); ++itr)
     {
-        if( abs((int32)((*itr)->Players.size() - size)) <= 1 )
+        if (abs((int32)((*itr)->Players.size() - size)) <= 1)
         {
             groupToKick = itr;
             found = true;
@@ -109,7 +109,7 @@ bool BattleGroundQueue::SelectionPool::KickGroup(uint32 size)
             groupToKick = itr;
     }
     //if pool is empty, do nothing
-    if( GetPlayerCount() )
+    if (GetPlayerCount())
     {
         //update player count
         GroupQueueInfo* ginfo = (*groupToKick);
@@ -129,14 +129,14 @@ bool BattleGroundQueue::SelectionPool::KickGroup(uint32 size)
 bool BattleGroundQueue::SelectionPool::AddGroup(GroupQueueInfo *ginfo, uint32 desiredCount)
 {
     //if group is larger than desired count - don't allow to add it to pool
-    if( !ginfo->IsInvitedToBGInstanceGUID && desiredCount >= PlayerCount + ginfo->Players.size() )
+    if (!ginfo->IsInvitedToBGInstanceGUID && desiredCount >= PlayerCount + ginfo->Players.size())
     {
         SelectedGroups.push_back(ginfo);
         // increase selected players count
         PlayerCount += ginfo->Players.size();
         return true;
     }
-    if( PlayerCount < desiredCount )
+    if (PlayerCount < desiredCount)
         return true;
     return false;
 }
@@ -197,14 +197,14 @@ void BattleGroundQueue::PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* g
 {
     uint32 timeInQueue = getMSTimeDiff(ginfo->JoinTime, getMSTime());
     uint8 team_index = BG_TEAM_ALLIANCE;                    //default set to BG_TEAM_ALLIANCE - or non rated arenas!
-    if( !ginfo->ArenaType )
+    if (!ginfo->ArenaType)
     {
-        if( ginfo->Team == HORDE )
+        if (ginfo->Team == HORDE)
             team_index = BG_TEAM_HORDE;
     }
     else
     {
-        if( ginfo->IsRated )
+        if (ginfo->IsRated)
             team_index = BG_TEAM_HORDE;                     //for rated arenas use BG_TEAM_HORDE
     }
 
@@ -224,14 +224,14 @@ void BattleGroundQueue::PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* g
 uint32 BattleGroundQueue::GetAverageQueueWaitTime(GroupQueueInfo* ginfo, BGQueueIdBasedOnLevel queue_id)
 {
     uint8 team_index = BG_TEAM_ALLIANCE;                    //default set to BG_TEAM_ALLIANCE - or non rated arenas!
-    if( !ginfo->ArenaType )
+    if (!ginfo->ArenaType)
     {
-        if( ginfo->Team == HORDE )
+        if (ginfo->Team == HORDE)
             team_index = BG_TEAM_HORDE;
     }
     else
     {
-        if( ginfo->IsRated )
+        if (ginfo->IsRated)
             team_index = BG_TEAM_HORDE;                     //for rated arenas use BG_TEAM_HORDE
     }
     //check if there is enought values(we always add values > 0)
@@ -252,7 +252,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
 
     //remove player from map, if he's there
     itr = m_QueuedPlayers.find(guid);
-    if( itr == m_QueuedPlayers.end() )
+    if (itr == m_QueuedPlayers.end())
     {
         sLog.outError("BattleGroundQueue: couldn't find player to remove GUID: %u", GUID_LOPART(guid));
         return;
@@ -273,7 +273,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
         {
             for(group_itr_tmp = m_QueuedGroups[queue_id_tmp][j].begin(); group_itr_tmp != m_QueuedGroups[queue_id_tmp][j].end(); ++group_itr_tmp)
             {
-                if( (*group_itr_tmp) == group )
+                if ((*group_itr_tmp) == group)
                 {
                     queue_id = queue_id_tmp;
                     group_itr = group_itr_tmp;
@@ -285,7 +285,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
         }
     }
     //player can't be in queue without group, but just in case
-    if( queue_id == -1 )
+    if (queue_id == -1)
     {
         sLog.outError("BattleGroundQueue: ERROR Cannot find groupinfo for player GUID: %u", GUID_LOPART(guid));
         return;
@@ -299,14 +299,14 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
 
     // remove player queue info from group queue info
     std::map<uint64, PlayerQueueInfo*>::iterator pitr = group->Players.find(guid);
-    if( pitr != group->Players.end() )
+    if (pitr != group->Players.end())
         group->Players.erase(pitr);
 
     // if invited to bg, and should decrease invited count, then do it
-    if( decreaseInvitedCount && group->IsInvitedToBGInstanceGUID )
+    if (decreaseInvitedCount && group->IsInvitedToBGInstanceGUID)
     {
         BattleGround* bg = sBattleGroundMgr.GetBattleGround(group->IsInvitedToBGInstanceGUID, group->BgTypeId);
-        if( bg )
+        if (bg)
             bg->DecreaseInvitedCount(group->Team);
     }
 
@@ -314,18 +314,18 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     m_QueuedPlayers.erase(itr);
 
     //if we left BG queue(not porting) OR if arena team left queue for rated match
-    if( (decreaseInvitedCount && !group->ArenaType) || (group->ArenaType && group->IsRated && group->Players.empty()) )
+    if ((decreaseInvitedCount && !group->ArenaType) || (group->ArenaType && group->IsRated && group->Players.empty()))
         AnnounceWorld(group, guid, false);
 
     //if player leaves queue and he is invited to rated arena match, then he have to loose
-    if( group->IsInvitedToBGInstanceGUID && group->IsRated && decreaseInvitedCount )
+    if (group->IsInvitedToBGInstanceGUID && group->IsRated && decreaseInvitedCount)
     {
         ArenaTeam * at = objmgr.GetArenaTeamById(group->ArenaTeamId);
-        if( at )
+        if (at)
         {
             sLog.outDebug("UPDATING memberLost's personal arena rating for %u by opponents rating: %u", GUID_LOPART(guid), group->OpponentsTeamRating);
             Player *plr = objmgr.GetPlayer(guid);
-            if( plr )
+            if (plr)
                 at->MemberLost(plr, group->OpponentsTeamRating);
             else
                 at->OfflineMemberLost(guid, group->OpponentsTeamRating);
@@ -334,7 +334,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     }
 
     // remove group queue info if needed
-    if( group->Players.empty() )
+    if (group->Players.empty())
     {
         m_QueuedGroups[queue_id][index].erase(group_itr);
         delete group;
@@ -342,7 +342,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     // if group wasn't empty, so it wasn't deleted, and player have left a rated
     // queue -> everyone from the group should leave too
     // don't remove recursively if already invited to bg!
-    else if( !group->IsInvitedToBGInstanceGUID && group->IsRated )
+    else if (!group->IsInvitedToBGInstanceGUID && group->IsRated)
     {
         // remove next player, this is recursive
         // first send removal information
@@ -367,7 +367,7 @@ void BattleGroundQueue::AnnounceWorld(GroupQueueInfo *ginfo, const uint64& playe
 {
     if(ginfo->ArenaType) //if Arena
     {
-        if( sWorld.getConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE) && ginfo->IsRated )
+        if (sWorld.getConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE) && ginfo->IsRated)
         {
             BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(ginfo->BgTypeId);
             if(!bg)
@@ -382,7 +382,7 @@ void BattleGroundQueue::AnnounceWorld(GroupQueueInfo *ginfo, const uint64& playe
     }
     else //if BG
     {
-        if( sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE) )
+        if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
         {
             Player *plr = objmgr.GetPlayer(playerGUID);
             BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(ginfo->BgTypeId);
@@ -397,14 +397,14 @@ void BattleGroundQueue::AnnounceWorld(GroupQueueInfo *ginfo, const uint64& playe
             uint32 q_min_level = (queue_id + 1) * 10;
             GroupsQueueType::const_iterator itr;
             for(itr = m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE].begin(); itr != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE].end(); ++itr)
-                if( !(*itr)->IsInvitedToBGInstanceGUID )
+                if (!(*itr)->IsInvitedToBGInstanceGUID)
                     qAlliance += (*itr)->Players.size();
             for(itr = m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_HORDE].begin(); itr != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_HORDE].end(); ++itr)
-                if( !(*itr)->IsInvitedToBGInstanceGUID )
+                if (!(*itr)->IsInvitedToBGInstanceGUID)
                     qHorde += (*itr)->Players.size();
 
             // Show queue status to player only (when joining queue)
-            if( sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_PLAYERONLY) )
+            if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_PLAYERONLY))
             {
                 ChatHandler(plr).PSendSysMessage(LANG_BG_QUEUE_ANNOUNCE_SELF,
                     bgName, q_min_level, q_min_level + 10, qAlliance, MinPlayers, qHorde, MinPlayers);
@@ -422,29 +422,48 @@ void BattleGroundQueue::AnnounceWorld(GroupQueueInfo *ginfo, const uint64& playe
 bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * bg, uint32 side)
 {
     // set side if needed
-    if( side )
+    if (side)
         ginfo->Team = side;
 
-    if( !ginfo->IsInvitedToBGInstanceGUID )
+    if (!ginfo->IsInvitedToBGInstanceGUID)
     {
         // not yet invited
         // set invitation
         ginfo->IsInvitedToBGInstanceGUID = bg->GetInstanceID();
-        BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
+        BattleGroundTypeId bgTypeId = bg->GetTypeID();
+        BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bgTypeId, bg->GetArenaType());
         BGQueueIdBasedOnLevel queue_id = bg->GetQueueId();
+
+        // set ArenaTeamId for rated matches
+        if (bg->isArena() && bg->isRated())
+            bg->SetArenaTeamIdForTeam(ginfo->Team, ginfo->ArenaTeamId);
+
+        ginfo->RemoveInviteTime = getMSTime() + INVITE_ACCEPT_WAIT_TIME;
+
         // loop through the players
         for(std::map<uint64,PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
             // get the player
             Player* plr = objmgr.GetPlayer(itr->first);
             // if offline, skip him, this should not happen - player is removed from queue when he logs out
-            if( !plr )
+            if (!plr)
                 continue;
 
             // invite the player
             PlayerInvitedToBGUpdateAverageWaitTime(ginfo, queue_id);
-            ginfo->RemoveInviteTime = getMSTime() + INVITE_ACCEPT_WAIT_TIME;
-            sBattleGroundMgr.InvitePlayer(plr, bg->GetInstanceID(), bg->GetTypeID(), ginfo->Team);
+            //sBattleGroundMgr.InvitePlayer(plr, bg, ginfo->Team);
+
+            // set invited player counters
+            bg->IncreaseInvitedCount(ginfo->Team);
+
+            plr->SetInviteForBattleGroundQueueType(bgQueueTypeId, ginfo->IsInvitedToBGInstanceGUID);
+
+            // create remind invite events
+            BGQueueInviteEvent* inviteEvent = new BGQueueInviteEvent(plr->GetGUID(), ginfo->IsInvitedToBGInstanceGUID, bgTypeId, ginfo->RemoveInviteTime);
+            plr->m_Events.AddEvent(inviteEvent, plr->m_Events.CalculateTime(INVITATION_REMIND_TIME));
+            // create automatic remove events
+            BGQueueRemoveEvent* removeEvent = new BGQueueRemoveEvent(plr->GetGUID(), ginfo->IsInvitedToBGInstanceGUID, bgTypeId, bgQueueTypeId, ginfo->RemoveInviteTime);
+            plr->m_Events.AddEvent(removeEvent, plr->m_Events.CalculateTime(INVITE_ACCEPT_WAIT_TIME));
 
             WorldPacket data;
 
@@ -460,63 +479,6 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
     }
 
     return false;
-}
-
-// used to remove the Enter Battle window if the battle has already ended, but someone still has it
-// (this can happen in arenas mainly, since the preparation is shorter than the timer for the bgqueueremove event
-void BattleGroundQueue::BGEndedRemoveInvites(BattleGround *bg)
-{
-    BGQueueIdBasedOnLevel queue_id = bg->GetQueueId();
-    uint32 bgInstanceId = bg->GetInstanceID();
-    BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
-    GroupsQueueType::iterator itr, next;
-    for(uint32 i = 0; i < BG_QUEUE_GROUP_TYPES_COUNT; i++)
-    {
-        itr = m_QueuedGroups[queue_id][i].begin();
-        next = itr;
-        while (next != m_QueuedGroups[queue_id][i].end())
-        {
-            // must do this way, because the groupinfo will be deleted when all playerinfos are removed
-            itr = next;
-            ++next;
-            GroupQueueInfo * ginfo = (*itr);
-            // if group was invited to this bg instance, then remove all references
-            if( ginfo->IsInvitedToBGInstanceGUID == bgInstanceId )
-            {
-                // after removing this much playerinfos, the ginfo will be deleted, so we'll use a for loop
-                uint32 to_remove = ginfo->Players.size();
-                for(uint32 j = 0; j < to_remove; j++)
-                {
-                    // always remove the first one in the group
-                    std::map<uint64, PlayerQueueInfo * >::iterator itr2 = ginfo->Players.begin();
-                    if( itr2 == ginfo->Players.end() )
-                    {
-                        sLog.outError("Empty Players in ginfo, this should never happen!");
-                        return;
-                    }
-                    // get the player
-                    Player * plr = objmgr.GetPlayer(itr2->first);
-                    if( !plr )
-                    {
-                        sLog.outError("Player offline when trying to remove from GroupQueueInfo, this should never happen.");
-                        continue;
-                    }
-
-                    // get the queueslot
-                    uint32 queueSlot = plr->GetBattleGroundQueueIndex(bgQueueTypeId);
-                    if (queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES) // player is in queue
-                    {
-                        plr->RemoveBattleGroundQueueId(bgQueueTypeId);
-                        // remove player from queue, this might delete the ginfo as well! don't use that pointer after this!
-                        RemovePlayer(itr2->first, true);
-                        WorldPacket data;
-                        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, queueSlot, STATUS_NONE, 0, 0, 0);
-                        plr->GetSession()->SendPacket(&data);
-                    }
-                }
-            }
-        }
-    }
 }
 
 /*
@@ -562,18 +524,18 @@ void BattleGroundQueue::FillPlayersToBG(BattleGround* bg, BGQueueIdBasedOnLevel 
     while( abs(diffAli - diffHorde) > 1 && (m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() > 0 || m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() > 0) )
     {
         //each cycle execution we need to kick at least 1 group
-        if( diffAli < diffHorde )
+        if (diffAli < diffHorde)
         {
             //kick alliance group, add to pool new group if needed
-            if( m_SelectionPools[BG_TEAM_ALLIANCE].KickGroup(diffHorde - diffAli) )
+            if (m_SelectionPools[BG_TEAM_ALLIANCE].KickGroup(diffHorde - diffAli))
             {
                 for (; aliIndex < aliCount && m_SelectionPools[BG_TEAM_ALLIANCE].AddGroup((*Ali_itr), (aliFree >= diffHorde) ? aliFree - diffHorde : 0); aliIndex++)
                     ++Ali_itr;
             }
             //if ali selection is already empty, then kick horde group, but if there are less horde than ali in bg - break;
-            if( !m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() )
+            if (!m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())
             {
-                if( aliFree <= diffHorde + 1 )
+                if (aliFree <= diffHorde + 1)
                     break;
                 m_SelectionPools[BG_TEAM_HORDE].KickGroup(diffHorde - diffAli);
             }
@@ -581,14 +543,14 @@ void BattleGroundQueue::FillPlayersToBG(BattleGround* bg, BGQueueIdBasedOnLevel 
         else
         {
             //kick horde group, add to pool new group if needed
-            if( m_SelectionPools[BG_TEAM_HORDE].KickGroup(diffAli - diffHorde) )
+            if (m_SelectionPools[BG_TEAM_HORDE].KickGroup(diffAli - diffHorde))
             {
                 for (; hordeIndex < hordeCount && m_SelectionPools[BG_TEAM_HORDE].AddGroup((*Horde_itr), (hordeFree >= diffAli) ? hordeFree - diffAli : 0); hordeIndex++)
                     ++Horde_itr;
             }
-            if( !m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() )
+            if (!m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount())
             {
-                if( hordeFree <= diffAli + 1 )
+                if (hordeFree <= diffAli + 1)
                     break;
                 m_SelectionPools[BG_TEAM_ALLIANCE].KickGroup(diffAli - diffHorde);
             }
@@ -611,10 +573,10 @@ bool BattleGroundQueue::CheckPremadeMatch(BGQueueIdBasedOnLevel queue_id, uint32
         //if groups aren't invited
         GroupsQueueType::const_iterator ali_group, horde_group;
         for( ali_group = m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].begin(); ali_group != m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].end(); ++ali_group)
-            if( !(*ali_group)->IsInvitedToBGInstanceGUID )
+            if (!(*ali_group)->IsInvitedToBGInstanceGUID)
                 break;
         for( horde_group = m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].begin(); horde_group != m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].end(); ++horde_group)
-            if( !(*horde_group)->IsInvitedToBGInstanceGUID )
+            if (!(*horde_group)->IsInvitedToBGInstanceGUID)
                 break;
 
         if( ali_group != m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].end() && horde_group != m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].end())
@@ -629,7 +591,7 @@ bool BattleGroundQueue::CheckPremadeMatch(BGQueueIdBasedOnLevel queue_id, uint32
                 for(itr = m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + i].begin(); itr != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + i].end(); ++itr)
                 {
                     //if itr can join BG and player count is less that maxPlayers, then add group to selectionpool
-                    if( !(*itr)->IsInvitedToBGInstanceGUID && !m_SelectionPools[i].AddGroup((*itr), maxPlayers) )
+                    if (!(*itr)->IsInvitedToBGInstanceGUID && !m_SelectionPools[i].AddGroup((*itr), maxPlayers))
                         break;
                 }
             }
@@ -668,17 +630,17 @@ bool BattleGroundQueue::CheckNormalMatch(BattleGround* bg_template, BGQueueIdBas
         itr_team[i] = m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + i].begin();
         for(; itr_team[i] != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + i].end(); ++(itr_team[i]))
         {
-            if( !(*(itr_team[i]))->IsInvitedToBGInstanceGUID )
+            if (!(*(itr_team[i]))->IsInvitedToBGInstanceGUID)
             {
                 m_SelectionPools[i].AddGroup(*(itr_team[i]), maxPlayers);
-                if( m_SelectionPools[i].GetPlayerCount() >= minPlayers )
+                if (m_SelectionPools[i].GetPlayerCount() >= minPlayers)
                     break;
             }
         }
     }
     //try to invite same number of players - this cycle may cause longer wait time even if there are enough players in queue, but we want ballanced bg
     uint32 j = BG_TEAM_ALLIANCE;
-    if( m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() < m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() )
+    if (m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() < m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())
         j = BG_TEAM_HORDE;
     if( sWorld.getConfig(CONFIG_BATTLEGROUND_INVITATION_TYPE) != 0
         && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() >= minPlayers && m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() >= minPlayers )
@@ -687,16 +649,16 @@ bool BattleGroundQueue::CheckNormalMatch(BattleGround* bg_template, BGQueueIdBas
         ++(itr_team[j]);                                         //this will not cause a crash, because for cycle above reached break;
         for(; itr_team[j] != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + j].end(); ++(itr_team[j]))
         {
-            if( !(*(itr_team[j]))->IsInvitedToBGInstanceGUID )
-                if( !m_SelectionPools[j].AddGroup(*(itr_team[j]), m_SelectionPools[(j + 1) % BG_TEAMS_COUNT].GetPlayerCount()) )
+            if (!(*(itr_team[j]))->IsInvitedToBGInstanceGUID)
+                if (!m_SelectionPools[j].AddGroup(*(itr_team[j]), m_SelectionPools[(j + 1) % BG_TEAMS_COUNT].GetPlayerCount()))
                     break;
         }
         // do not allow to start bg with more than 2 players more on 1 faction
-        if( abs((int32)(m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() - m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())) > 2 )
+        if (abs((int32)(m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() - m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())) > 2)
             return false;
     }
     //allow 1v0 if debug bg
-    if( sBattleGroundMgr.isTesting() && bg_template->isBattleGround() && (m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount()) )
+    if (sBattleGroundMgr.isTesting() && bg_template->isBattleGround() && (m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount()))
         return true;
     //return true if there are enough players in selection pools - enable to work .debug bg command correctly
     return m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() >= minPlayers;
@@ -705,7 +667,7 @@ bool BattleGroundQueue::CheckNormalMatch(BattleGround* bg_template, BGQueueIdBas
 // this method will check if we can invite players to same faction skirmish match
 bool BattleGroundQueue::CheckSkirmishForSameFaction(BGQueueIdBasedOnLevel queue_id, uint32 minPlayersPerTeam)
 {
-    if( m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() < minPlayersPerTeam && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() < minPlayersPerTeam )
+    if (m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() < minPlayersPerTeam && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() < minPlayersPerTeam)
         return false;
     uint32 teamIndex = BG_TEAM_ALLIANCE;
     uint32 otherTeam = BG_TEAM_HORDE;
@@ -723,9 +685,9 @@ bool BattleGroundQueue::CheckSkirmishForSameFaction(BGQueueIdBasedOnLevel queue_
     //set itr_team to group that was added to selection pool latest
     GroupsQueueType::iterator itr_team = m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + teamIndex].begin();
     for(; itr_team != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + teamIndex].end(); ++itr_team)
-        if( ginfo == *itr_team )
+        if (ginfo == *itr_team)
             break;
-    if( itr_team == m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + teamIndex].end() )
+    if (itr_team == m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + teamIndex].end())
         return false;
     GroupsQueueType::iterator itr_team2 = itr_team;
     ++itr_team2;
@@ -733,10 +695,10 @@ bool BattleGroundQueue::CheckSkirmishForSameFaction(BGQueueIdBasedOnLevel queue_
     for(; itr_team2 != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + teamIndex].end(); ++itr_team2)
     {
         //if selection pool is full then break;
-        if( !(*itr_team2)->IsInvitedToBGInstanceGUID && !m_SelectionPools[otherTeam].AddGroup(*itr_team2, minPlayersPerTeam) )
+        if (!(*itr_team2)->IsInvitedToBGInstanceGUID && !m_SelectionPools[otherTeam].AddGroup(*itr_team2, minPlayersPerTeam))
             break;
     }
-    if( m_SelectionPools[otherTeam].GetPlayerCount() != minPlayersPerTeam )
+    if (m_SelectionPools[otherTeam].GetPlayerCount() != minPlayersPerTeam)
         return false;
 
     //here we have correct 2 selections and we need to change one teams team and move selection pool teams to other team's queue
@@ -751,7 +713,7 @@ bool BattleGroundQueue::CheckSkirmishForSameFaction(BGQueueIdBasedOnLevel queue_
         ++itr2;
         for(; itr2 != m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + teamIndex].end(); ++itr2)
         {
-            if( *itr2 == *itr )
+            if (*itr2 == *itr)
             {
                 m_QueuedGroups[queue_id][BG_QUEUE_NORMAL_ALLIANCE + teamIndex].erase(itr2);
                 break;
@@ -804,7 +766,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
             for(GroupsQueueType::const_iterator itr = m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.begin(); itr != m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.end(); ++itr)
                 InviteGroupToBG((*itr), bg, (*itr)->Team);
 
-            if( !bg->HasFreeSlots() )
+            if (!bg->HasFreeSlots())
             {
                 // remove BG from BGFreeSlotQueue
                 bg->RemoveFromBGFreeSlotQueue();
@@ -815,7 +777,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
     // finished iterating through the bgs with free slots, maybe we need to create a new bg
 
     BattleGround * bg_template = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
-    if( !bg_template )
+    if (!bg_template)
     {
         sLog.outError("Battleground: Update: bg template not found for %u", bgTypeId);
         return;
@@ -823,11 +785,11 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
     // get the min. players per team, properly for larger arenas as well. (must have full teams for arena matches!)
     uint32 MinPlayersPerTeam = bg_template->GetMinPlayersPerTeam();
     uint32 MaxPlayersPerTeam = bg_template->GetMaxPlayersPerTeam();
-    if( sBattleGroundMgr.isTesting() )
+    if (sBattleGroundMgr.isTesting())
         MinPlayersPerTeam = 1;
-    if( bg_template->isArena() )
+    if (bg_template->isArena())
     {
-        if( sBattleGroundMgr.isArenaTesting() )
+        if (sBattleGroundMgr.isArenaTesting())
         {
             MaxPlayersPerTeam = 1;
             MinPlayersPerTeam = 1;
@@ -858,14 +820,14 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
     m_SelectionPools[BG_TEAM_ALLIANCE].Init();
     m_SelectionPools[BG_TEAM_HORDE].Init();
 
-    if( bg_template->isBattleGround() )
+    if (bg_template->isBattleGround())
     {
         //check if there is premade against premade match
-        if( CheckPremadeMatch(queue_id, MinPlayersPerTeam, MaxPlayersPerTeam) )
+        if (CheckPremadeMatch(queue_id, MinPlayersPerTeam, MaxPlayersPerTeam))
         {
             //create new battleground
             BattleGround * bg2 = NULL;
-            if( !(bg2 = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, queue_id, 0, false)) )
+            if (!(bg2 = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, queue_id, 0, false)))
             {
                 sLog.outError("BattleGroundQueue::Update - Cannot create battleground: %u", bgTypeId);
                 return;
@@ -883,7 +845,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
     }
 
     // now check if there are in queues enough players to start new game of (normal battleground, or non-rated arena)
-    if( !isRated )
+    if (!isRated)
     {
         // if there are enough players in pools, start new battleground or non rated arena
         if( CheckNormalMatch(bg_template, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam)
@@ -891,7 +853,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
         {
             // we successfully created a pool
             BattleGround * bg2 = NULL;
-            if( !(bg2 = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, queue_id, arenaType, false)) )
+            if (!(bg2 = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, queue_id, arenaType, false)))
             {
                 sLog.outError("BattleGroundQueue::Update - Cannot create battleground: %u", bgTypeId);
                 return;
@@ -905,7 +867,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
             bg2->StartBattleGround();
         }
     }
-    else if( bg_template->isArena() )
+    else if (bg_template->isArena())
     {
         // found out the minimum and maximum ratings the newly added team should battle against
         // arenaRating is the rating of the latest joined team, or 0
@@ -914,22 +876,22 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
         {
             GroupQueueInfo* front1 = NULL;
             GroupQueueInfo* front2 = NULL;
-            if( !m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].empty() )
+            if (!m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].empty())
             {
                 front1 = m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].front();
                 arenaRating = front1->ArenaTeamRating;
             }
-            if( !m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].empty() )
+            if (!m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].empty())
             {
                 front2 = m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].front();
                 arenaRating = front2->ArenaTeamRating;
             }
-            if( front1 && front2 )
+            if (front1 && front2)
             {
-                if( front1->JoinTime < front2->JoinTime )
+                if (front1->JoinTime < front2->JoinTime)
                     arenaRating = front1->ArenaTeamRating;
             }
-            else if( !front1 && !front2 )
+            else if (!front1 && !front2)
                 return; //queues are empty
         }
 
@@ -969,7 +931,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
         // if we don't have, we must try to continue search in same queue
         // tmp variables are correctly set
         // this code isn't much userfriendly - but it is supposed to continue search for mathing group in HORDE queue
-        if( m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() == 0 && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() )
+        if (m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() == 0 && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount())
         {
             itr_team[BG_TEAM_ALLIANCE] = itr_team[BG_TEAM_HORDE];
             ++itr_team[BG_TEAM_ALLIANCE];
@@ -985,7 +947,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
             }
         }
         // this code isn't much userfriendly - but it is supposed to continue search for mathing group in ALLIANCE queue
-        if( m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() == 0 && m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() )
+        if (m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() == 0 && m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())
         {
             itr_team[BG_TEAM_HORDE] = itr_team[BG_TEAM_ALLIANCE];
             ++itr_team[BG_TEAM_HORDE];
@@ -1002,10 +964,10 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
         }
 
         //if we have 2 teams, then start new arena and invite players!
-        if( m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() )
+        if (m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount())
         {
             BattleGround* arena = NULL;
-            if( !(arena = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, queue_id, arenaType, true)) )
+            if (!(arena = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, queue_id, arenaType, true)))
             {
                 sLog.outError("BattlegroundQueue::Update couldn't create arena instance for rated arena match!");
                 return;
@@ -1016,7 +978,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
             (*(itr_team[BG_TEAM_HORDE]))->OpponentsTeamRating = (*(itr_team[BG_TEAM_ALLIANCE]))->ArenaTeamRating;
             sLog.outDebug("setting oposite teamrating for team %u to %u", (*(itr_team[BG_TEAM_HORDE]))->ArenaTeamId, (*(itr_team[BG_TEAM_HORDE]))->OpponentsTeamRating);
             // now we must move team if we changed its faction to another faction queue, because then we will spam log by errors in Queue::RemovePlayer
-            if( (*(itr_team[BG_TEAM_ALLIANCE]))->Team != ALLIANCE )
+            if ((*(itr_team[BG_TEAM_ALLIANCE]))->Team != ALLIANCE)
             {
                 // add to alliance queue
                 m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].push_front(*(itr_team[BG_TEAM_ALLIANCE]));
@@ -1024,7 +986,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
                 m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].erase(itr_team[BG_TEAM_ALLIANCE]);
                 itr_team[BG_TEAM_ALLIANCE] = m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].begin();
             }
-            if( (*(itr_team[BG_TEAM_HORDE]))->Team != HORDE )
+            if ((*(itr_team[BG_TEAM_HORDE]))->Team != HORDE)
             {
                 m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_HORDE].push_front(*(itr_team[BG_TEAM_HORDE]));
                 m_QueuedGroups[queue_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr_team[BG_TEAM_HORDE]);
@@ -1048,28 +1010,27 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLeve
 bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
     Player* plr = objmgr.GetPlayer( m_PlayerGuid );
-
     // player logged off (we should do nothing, he is correctly removed from queue in another procedure)
     if (!plr)
         return true;
 
-    // Player can be in another BG queue and must be removed in normal way in any case
-
     BattleGround* bg = sBattleGroundMgr.GetBattleGround(m_BgInstanceGUID, m_BgTypeId);
+    //if battleground ended and its instance deleted - do nothing
     if (!bg)
         return true;
 
     BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
     uint32 queueSlot = plr->GetBattleGroundQueueIndex(bgQueueTypeId);
-    if (queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES)         // player is in queue
+    if( queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES )        // player is in queue or in battleground
     {
-        // check if player is invited to this bg ... this check must be here, because when player leaves queue and joins another, it would cause a problems
+        // check if player is invited to this bg
         BattleGroundQueue::QueuedPlayersMap const& qpMap = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].m_QueuedPlayers;
         BattleGroundQueue::QueuedPlayersMap::const_iterator qItr = qpMap.find(m_PlayerGuid);
-        if (qItr != qpMap.end() && qItr->second.GroupInfo->IsInvitedToBGInstanceGUID == m_BgInstanceGUID)
+        if( qItr != qpMap.end() && qItr->second.GroupInfo->IsInvitedToBGInstanceGUID == m_BgInstanceGUID
+            && qItr->second.GroupInfo->RemoveInviteTime == m_RemoveTime )
         {
             WorldPacket data;
-            //here must be remaining time
+            //we must send remaining time in queue
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, 0, qItr->second.GroupInfo->ArenaType);
             plr->GetSession()->SendPacket(&data);
         }
@@ -1079,10 +1040,18 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 void BGQueueInviteEvent::Abort(uint64 /*e_time*/)
 {
-    //this should not be called
-    sLog.outError("Battleground invite event ABORTED!");
+    //do nothing
 }
 
+/*
+    this event has many possibilities when it is executed:
+    1. player is in battleground ( he clicked enter on invitation window )
+    2. player left battleground queue and he isn't there any more
+    3. player left battleground queue and he joined it again and IsInvitedToBGInstanceGUID = 0
+    4. player left queue and he joined again and he has been invited to same battleground again -> we should not remove him from queue yet
+    5. player is invited to bg and he didn't choose what to do and timer expired - only in this condition we should call queue::RemovePlayer
+    we must remove player in the 5. case even if battleground object doesn't exist!
+*/
 bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
     Player* plr = objmgr.GetPlayer( m_PlayerGuid );
@@ -1091,30 +1060,32 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         return true;
 
     BattleGround* bg = sBattleGroundMgr.GetBattleGround(m_BgInstanceGUID, m_BgTypeId);
-    if (!bg)
-        return true;
+    //battleground can be deleted already when we are removing queue info
+    //bg pointer can be NULL! so use it carefully!
 
-    sLog.outDebug("Battleground: removing player %u from bg queue for instance %u because of not pressing enter battle in time.",plr->GetGUIDLow(),m_BgInstanceGUID);
-
-    BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
-    uint32 queueSlot = plr->GetBattleGroundQueueIndex(bgQueueTypeId);
-    if (queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES) // player is in queue
+    uint32 queueSlot = plr->GetBattleGroundQueueIndex(m_BgQueueTypeId);
+    if( queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES )        // player is in queue, or in Battleground
     {
-        // check if player is invited to this bg ... this check must be here, because when player leaves queue and joins another, it would cause a problems
-        BattleGroundQueue::QueuedPlayersMap& qpMap = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].m_QueuedPlayers;
+        // check if player is in queue for this BG and if we are removing his invite event
+        BattleGroundQueue::QueuedPlayersMap& qpMap = sBattleGroundMgr.m_BattleGroundQueues[m_BgQueueTypeId].m_QueuedPlayers;
         BattleGroundQueue::QueuedPlayersMap::iterator qMapItr = qpMap.find(m_PlayerGuid);
-        if (qMapItr != qpMap.end() && qMapItr->second.GroupInfo && qMapItr->second.GroupInfo->IsInvitedToBGInstanceGUID == m_BgInstanceGUID)
+        if( qMapItr != qpMap.end() && qMapItr->second.GroupInfo
+            && qMapItr->second.GroupInfo->IsInvitedToBGInstanceGUID == m_BgInstanceGUID
+            && qMapItr->second.GroupInfo->RemoveInviteTime == m_RemoveTime )
         {
-            plr->RemoveBattleGroundQueueId(bgQueueTypeId);
-            sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].RemovePlayer(m_PlayerGuid, true);
-            sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].Update(bg->GetTypeID(), bg->GetQueueId());
+            sLog.outDebug("Battleground: removing player %u from bg queue for instance %u because of not pressing enter battle in time.",plr->GetGUIDLow(),m_BgInstanceGUID);
+
+            plr->RemoveBattleGroundQueueId(m_BgQueueTypeId);
+            sBattleGroundMgr.m_BattleGroundQueues[m_BgQueueTypeId].RemovePlayer(m_PlayerGuid, true);
+            //update queues if battleground isn't ended
+            if (bg)
+                sBattleGroundMgr.m_BattleGroundQueues[m_BgQueueTypeId].Update(m_BgTypeId, bg->GetQueueId());
+
             WorldPacket data;
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, queueSlot, STATUS_NONE, 0, 0, 0);
             plr->GetSession()->SendPacket(&data);
         }
     }
-    else
-        sLog.outDebug("Battleground: Player was already removed from queue");
 
     //event will be deleted
     return true;
@@ -1122,8 +1093,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {
-    //this should not be called
-    sLog.outError("Battleground remove event ABORTED!");
+    //do nothing
 }
 
 /*********************************************************/
@@ -1174,7 +1144,7 @@ void BattleGroundMgr::Update(uint32 diff)
     {
         itr = m_BattleGrounds[i].begin();
         // skip updating battleground template
-        if( itr != m_BattleGrounds[i].end() )
+        if (itr != m_BattleGrounds[i].end())
             ++itr;
         for(; itr != m_BattleGrounds[i].end(); itr = next)
         {
@@ -1232,7 +1202,8 @@ void BattleGroundMgr::Update(uint32 diff)
 void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket *data, BattleGround *bg, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype)
 {
     // we can be in 3 queues in same time...
-    if(StatusID == 0)
+
+    if (StatusID == 0 || !bg)
     {
         data->Initialize(SMSG_BATTLEFIELD_STATUS, 4*3);
         *data << uint32(QueueSlot);                         // queue id (0...2)
@@ -1377,7 +1348,7 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket *data, BattleGround *bg)
             uint32 team = bg->GetPlayerTeam(itr->first);
             if(!team && plr)
                 team = plr->GetTeam();
-            if( ( bg->GetWinner()==0 && team == ALLIANCE ) || ( bg->GetWinner()==1 && team==HORDE ) )
+            if (( bg->GetWinner()==0 && team == ALLIANCE ) || ( bg->GetWinner()==1 && team==HORDE ))
                 *data << uint8(1);
             else
                 *data << uint8(0);
@@ -1465,49 +1436,12 @@ void BattleGroundMgr::BuildPlayerJoinedBattleGroundPacket(WorldPacket *data, Pla
     *data << uint64(plr->GetGUID());
 }
 
-void BattleGroundMgr::InvitePlayer(Player* plr, uint32 bgInstanceGUID, BattleGroundTypeId bgTypeId, uint32 team)
-{
-    // set invited player counters:
-    BattleGround* bg = GetBattleGround(bgInstanceGUID, bgTypeId);
-    if(!bg)
-        return;
-    bg->IncreaseInvitedCount(team);
-
-    plr->SetInviteForBattleGroundQueueType(BGQueueTypeId(bg->GetTypeID(),bg->GetArenaType()), bgInstanceGUID);
-
-    // set the arena teams for rated matches
-    if(bg->isArena() && bg->isRated())
-    {
-        switch(bg->GetArenaType())
-        {
-        case ARENA_TYPE_2v2:
-            bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(0));
-            break;
-        case ARENA_TYPE_3v3:
-            bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(1));
-            break;
-        case ARENA_TYPE_5v5:
-            bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(2));
-            break;
-        default:
-            break;
-        }
-    }
-
-    // create invite events:
-    //add events to player's counters ---- this is not good way - there should be something like global event processor, where we should add those events
-    BGQueueInviteEvent* inviteEvent = new BGQueueInviteEvent(plr->GetGUID(), bgInstanceGUID, bgTypeId);
-    plr->m_Events.AddEvent(inviteEvent, plr->m_Events.CalculateTime(INVITATION_REMIND_TIME));
-    BGQueueRemoveEvent* removeEvent = new BGQueueRemoveEvent(plr->GetGUID(), bgInstanceGUID, bgTypeId, team);
-    plr->m_Events.AddEvent(removeEvent, plr->m_Events.CalculateTime(INVITE_ACCEPT_WAIT_TIME));
-}
-
 BattleGround * BattleGroundMgr::GetBattleGroundThroughClientInstance(uint32 instanceId, BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLevel queue_id)
 {
     //cause at HandleBattleGroundJoinOpcode the clients sends the instanceid he gets from
     //SMSG_BATTLEFIELD_LIST we need to find the battleground with this clientinstance-id
     BattleGround* bg = GetBattleGroundTemplate(bgTypeId);
-    if( !bg )
+    if (!bg)
         return NULL;
 
     if(bg->isArena())
@@ -1530,7 +1464,7 @@ BattleGround * BattleGroundMgr::GetBattleGround(uint32 InstanceID, BattleGroundT
         for(uint32 i = BATTLEGROUND_AV; i < MAX_BATTLEGROUND_TYPE_ID; i++)
         {
             itr = m_BattleGrounds[i].find(InstanceID);
-            if( itr != m_BattleGrounds[i].end() )
+            if (itr != m_BattleGrounds[i].end())
                 return itr->second;
         }
         return NULL;
@@ -1547,7 +1481,7 @@ BattleGround * BattleGroundMgr::GetBattleGroundTemplate(BattleGroundTypeId bgTyp
 
 uint32 BattleGroundMgr::CreateClientVisibleInstanceId(BattleGroundTypeId bgTypeId, BGQueueIdBasedOnLevel queue_id)
 {
-    if( IsArenaType(bgTypeId) )
+    if (IsArenaType(bgTypeId))
         return 0;                                           //arenas don't have client-instanceids
 
     // we create here an instanceid, which is just for
@@ -1747,12 +1681,12 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
         MinLvl = fields[3].GetUInt32();
         MaxLvl = fields[4].GetUInt32();
         //check values from DB
-        if( MaxPlayersPerTeam == 0 || MinPlayersPerTeam == 0 || MinPlayersPerTeam > MaxPlayersPerTeam )
+        if (MaxPlayersPerTeam == 0 || MinPlayersPerTeam == 0 || MinPlayersPerTeam > MaxPlayersPerTeam)
         {
             MaxPlayersPerTeam = bl->maxplayersperteam;
             MinPlayersPerTeam = bl->maxplayersperteam / 2;
         }
-        if( MinLvl == 0 || MaxLvl == 0 || MinLvl > MaxLvl )
+        if (MinLvl == 0 || MaxLvl == 0 || MinLvl > MaxLvl)
         {
             MinLvl = bl->minlvl;
             MaxLvl = bl->maxlvl;
@@ -2079,7 +2013,7 @@ void BattleGroundMgr::LoadBattleMastersEntry()
 
     uint32 count = 0;
 
-    if( !result )
+    if (!result)
     {
         barGoLink bar( 1 );
         bar.step();
