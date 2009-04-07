@@ -4208,7 +4208,7 @@ void Spell::EffectSummonPet(uint32 i)
 		default:
 			{
 				NewSummon->InitPetCreateSpells();
-				break:
+				break;
 			}
 	}
     NewSummon->InitTalentForLevel();
