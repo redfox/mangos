@@ -5744,33 +5744,6 @@ void Aura::PeriodicTick()
             if(m_modifier.m_auraname == SPELL_AURA_PERIODIC_DAMAGE)
             {
                 pdamage = amount;
-				
-				// SpellDamageBonus for magic spells
-				if( GetSpellProto()->DmgClass <= SPELL_DAMAGE_CLASS_MAGIC )
-					pdamage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), pdamage, DOT, GetStackAmount());
-				// MeleeDamagebonus for weapon based spells
-				else
-				{
-					// find the attacktype the DOT was caused by
-					WeaponAttackType m_attackType;
-					switch (GetSpellProto()->DmgClass)
-					{
-							case SPELL_DAMAGE_CLASS_MELEE:
-								if (GetSpellProto()->AttributesEx3 & SPELL_ATTR_EX3_REQ_OFFHAND)
-										m_attackType = OFF_ATTACK;
-								else
-										m_attackType = BASE_ATTACK;
-								break;
-							case SPELL_DAMAGE_CLASS_RANGED:
-									m_attackType = RANGED_ATTACK;
-									break;
-							default:
-									m_attackType = BASE_ATTACK;
-									break;
-					}
-					// apply bonus
-					pdamage = pCaster->MeleeDamageBonus(m_target, pdamage, m_attackType, GetSpellProto(), DOT, GetStackAmount());
-				}
 
                 // Calculate armor mitigation if it is a physical spell
                 // But not for bleed mechanic spells
@@ -5781,6 +5754,8 @@ void Aura::PeriodicTick()
                     cleanDamage.damage += pdamage - pdamageReductedArmor;
                     pdamage = pdamageReductedArmor;
                 }
+				
+				pdamage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), pdamage, DOT, GetStackAmount());
 
                 // Curse of Agony damage-per-tick calculation
                 if (GetSpellProto()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 0x0000000000000400LL) && GetSpellProto()->SpellIconID==544)
