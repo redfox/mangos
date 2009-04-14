@@ -1779,6 +1779,22 @@ void Spell::EffectDummy(uint32 i)
                 }
                 return;
             }
+			//Death Grip temp fix
+			if(m_spellInfo->Id==49576)
+			{
+				if (!unitTarget||!m_caster)
+					return;
+				uint32 mapid = m_caster->GetMapId();
+				float x = m_caster->GetPositionX();
+				float y = m_caster->GetPositionY();
+				float z = m_caster->GetPositionZ()+1;
+				float orientation = unitTarget->GetOrientation();
+				m_caster->CastSpell(unitTarget,49560,true,NULL);
+				unitTarget->SendMonsterMove(x,y,z,0,MOVEMENTFLAG_JUMPING,1);
+				if (unitTarget->GetTypeId()==TYPEID_PLAYER)
+					unitTarget->NearTeleportTo(x,y,z,orientation,false);
+				return;
+			}
             break;
     }
 
