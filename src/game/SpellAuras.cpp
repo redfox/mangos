@@ -5687,6 +5687,37 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
             DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellProto());
 
             m_modifier.m_amount += (int32)DoneActualBenefit;
+			
+			// now that the correct amount is computed, apply caster aura, if any
+			// Power Word: Shield - Glyph
+			switch(m_spellProto->SpellFamilyName)
+			{
+				case SPELLFAMILY_PRIEST:
+					if (m_spellProto->SpellFamilyFlags == 0x1) //PW:S
+					{
+						Unit::AuraList const& vOverRideCS = caster->GetAurasByType(SPELL_AURA_DUMMY);
+						for(Unit::AuraList::const_iterator k = vOverRideCS.begin(); k != vOverRideCS.end(); ++k)
+						{
+							switch((*k)->GetModifier()->m_miscvalue)
+							{
+								case 23: // Glyph: PW:S
+									// instant heal glyph m_amount% of the absorbed amount
+									int32 heal;
+									
+									heal = ((*k)->GetModifier()->m_amount * m_modifier.m_amount)/100;
+									caster->CastCustomSpell(m_target, 56160, &heal, NULL, NULL, true, 0, this);
+									break;
+								default:
+									break;
+							}
+						}
+						
+						break;
+					}
+					break;
+				default:
+					break;
+			}
         }
     }
 }
