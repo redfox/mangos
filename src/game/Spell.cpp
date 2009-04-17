@@ -3721,10 +3721,6 @@ void Spell::TriggerSpell()
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
-	// Web Wrap
-	if(m_spellInfo->Id==28622 && m_caster->GetMapId()==533)
-		return SPELL_CAST_OK;
-
     // check cooldowns to prevent cheating
     if(m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->HasSpellCooldown(m_spellInfo->Id))
     {
