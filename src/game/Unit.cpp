@@ -3345,6 +3345,7 @@ bool Unit::AddAura(Aura *Aur)
     }
 
     SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
+    AuraType aurName = Aur->GetModifier()->m_auraname;
 
     spellEffectPair spair = spellEffectPair(Aur->GetId(), Aur->GetEffIndex());
     AuraMap::iterator i = m_Auras.find( spair );
@@ -3372,7 +3373,7 @@ bool Unit::AddAura(Aura *Aur)
                 }
 
                 bool stop = false;
-                switch(aurSpellInfo->EffectApplyAuraName[Aur->GetEffIndex()])
+                switch(aurName)
                 {
                     // DoT/HoT/etc
                     case SPELL_AURA_PERIODIC_DAMAGE:    // allow stack
@@ -3448,13 +3449,13 @@ bool Unit::AddAura(Aura *Aur)
     // add aura, register in lists and arrays
     Aur->_AddAura();
     m_Auras.insert(AuraMap::value_type(spellEffectPair(Aur->GetId(), Aur->GetEffIndex()), Aur));
-    if (Aur->GetModifier()->m_auraname < TOTAL_AURAS)
+    if (aurName < TOTAL_AURAS)
     {
-        m_modAuras[Aur->GetModifier()->m_auraname].push_back(Aur);
+        m_modAuras[aurName].push_back(Aur);
     }
 
     Aur->ApplyModifier(true,true);
-    sLog.outDebug("Aura %u now is in use", Aur->GetModifier()->m_auraname);
+    sLog.outDebug("Aura %u now is in use", aurName);
     return true;
 }
 
@@ -5342,16 +5343,16 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
         }
         case SPELLFAMILY_HUNTER:
         {
-			// Aspect of the Viper
-			if ( dummySpell->SpellFamilyFlags & 0x4000000000000LL )
-			{
-				uint32 maxmana = GetMaxPower(POWER_MANA);
-				basepoints0 = maxmana* GetAttackTime(RANGED_ATTACK)/1000.0f/100.0f;
-				
-				target = this;
-				triggered_spell_id = 34075;
-				break;
-			}
+            // Aspect of the Viper
+            if ( dummySpell->SpellFamilyFlags & 0x4000000000000LL )
+            {
+                uint32 maxmana = GetMaxPower(POWER_MANA);
+                basepoints0 = maxmana* GetAttackTime(RANGED_ATTACK)/1000.0f/100.0f;
+
+                target = this;
+                triggered_spell_id = 34075;
+                break;
+            }
             // Thrill of the Hunt
             if ( dummySpell->SpellIconID == 2236 )
             {
@@ -6283,8 +6284,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                     switch(GetFirstSchoolInMask(GetSpellSchoolMask(procSpell)))
                     {
                         case SPELL_SCHOOL_NORMAL:
-                        case SPELL_SCHOOL_HOLY:
                             return false;                   // ignore
+                        case SPELL_SCHOOL_HOLY:   trigger_spell_id = 54370; break;
                         case SPELL_SCHOOL_FIRE:   trigger_spell_id = 54371; break;
                         case SPELL_SCHOOL_NATURE: trigger_spell_id = 54375; break;
                         case SPELL_SCHOOL_FROST:  trigger_spell_id = 54372; break;
@@ -7373,24 +7374,28 @@ void Unit::ModifyAuraState(AuraState flag, bool apply)
         if (HasFlag(UNIT_FIELD_AURASTATE,1<<(flag-1)))
         {
             RemoveFlag(UNIT_FIELD_AURASTATE, 1<<(flag-1));
-            Unit::AuraMap& tAuras = GetAuras();
-            for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end();)
-            {
-                SpellEntry const* spellProto = (*itr).second->GetSpellProto();
-                if (spellProto->CasterAuraState == flag)
-                {
-                    // exceptions (applied at state but not removed at state change)
-                    // Rampage
-                    if(spellProto->SpellIconID==2006 && spellProto->SpellFamilyName==SPELLFAMILY_WARRIOR && spellProto->SpellFamilyFlags==0x100000)
-                    {
-                        ++itr;
-                        continue;
-                    }
 
-                    RemoveAura(itr);
+            if (flag != AURA_STATE_ENRAGE)                  // enrage aura state triggering continues auras
+            {
+                Unit::AuraMap& tAuras = GetAuras();
+                for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end();)
+                {
+                    SpellEntry const* spellProto = (*itr).second->GetSpellProto();
+                    if (spellProto->CasterAuraState == flag)
+                    {
+                        // exceptions (applied at state but not removed at state change)
+                        // Rampage
+                        if(spellProto->SpellIconID==2006 && spellProto->SpellFamilyName==SPELLFAMILY_WARRIOR && spellProto->SpellFamilyFlags==0x100000)
+                        {
+                            ++itr;
+                            continue;
+                        }
+
+                        RemoveAura(itr);
+                    }
+                    else
+                        ++itr;
                 }
-                else
-                    ++itr;
             }
         }
     }
@@ -10666,6 +10671,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 break;
             }
             case SPELL_AURA_MANA_SHIELD:
+            case SPELL_AURA_OBS_MOD_MANA:
             case SPELL_AURA_DUMMY:
             {
                 sLog.outDebug("ProcDamageAndSpell: casting spell id %u (triggered by %s dummy aura of spell %u)", spellInfo->Id,(isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
