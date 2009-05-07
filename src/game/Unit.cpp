@@ -1000,27 +1000,27 @@ void Unit::CalculateSpellDamage(SpellNonMeleeDamage *damageInfo, int32 damage, S
     // Check spell crit chance
     bool crit = isSpellCrit(pVictim, spellInfo, damageSchoolMask, attackType);
     bool blocked = false;
-	// Per-school calc
+    // Per-school calc
     switch (spellInfo->DmgClass)
     {
         // Melee and Ranged Spells
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
         {
-			// Physical Damage
-			if ( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL )
-			{
-				//Calculate armor mitigation
-				damage = CalcArmorReducedDamage(pVictim, damage);
-				// Get blocked status
-				blocked = isSpellBlocked(pVictim, spellInfo, attackType);
-			}
-			// Magical Damage
-			else
-			{
-				// Calculate damage bonus
-				damage = SpellDamageBonus(pVictim, spellInfo, damage, SPELL_DIRECT_DAMAGE);
-			}
+            // Physical Damage
+            if ( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL )
+            {
+                //Calculate armor mitigation
+                damage = CalcArmorReducedDamage(pVictim, damage);
+                // Get blocked status
+                blocked = isSpellBlocked(pVictim, spellInfo, attackType);
+            }
+            // Magical Damage
+            else
+            {
+                // Calculate damage bonus
+                damage = SpellDamageBonus(pVictim, spellInfo, damage, SPELL_DIRECT_DAMAGE);
+            }
             if (crit)
             {
                 damageInfo->HitInfo|= SPELL_HIT_TYPE_CRIT;
@@ -1051,14 +1051,14 @@ void Unit::CalculateSpellDamage(SpellNonMeleeDamage *damageInfo, int32 damage, S
                 if (pVictim->GetTypeId()==TYPEID_PLAYER)
                     damage -= ((Player*)pVictim)->GetMeleeCritDamageReduction(damage);
             }
-			// Spell weapon based damage CAN BE crit & blocked at same time
-			if (blocked)
-			{
-				damageInfo->blocked = uint32(pVictim->GetShieldBlockValue());
-				if (damage < damageInfo->blocked)
-					damageInfo->blocked = damage;
-				damage-=damageInfo->blocked;
-			}
+            // Spell weapon based damage CAN BE crit & blocked at same time
+            if (blocked)
+            {
+                damageInfo->blocked = uint32(pVictim->GetShieldBlockValue());
+                if (damage < damageInfo->blocked)
+                    damageInfo->blocked = damage;
+                damage-=damageInfo->blocked;
+            }
         }
         break;
         // Magical Attacks
@@ -5150,7 +5150,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     // heal amount
-                    int32 team = triggerAmount*damage/500;   // heals 5 times less on party
+                    int32 team = triggerAmount*damage/500;
                     int32 self = triggerAmount*damage/100;
                     pVictim->CastCustomSpell(pVictim,15290,&team,&self,NULL,true,castItem,triggeredByAura);
                     return true;                                // no hidden cooldown
@@ -7641,11 +7641,13 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     AuraList const& mModDamagePercentDone = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
     for(AuraList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
     {
-		if( ((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto)) &&
-			(*i)->GetSpellProto()->EquippedItemClass == -1 &&
-			                                                // -1 == any item class (not wand then)
-			(*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0 )
-			                                                // 0 == any inventory type (not wand then
+        if( ((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto)) &&
+            (*i)->GetSpellProto()->EquippedItemClass == -1 &&
+                                                            // -1 == any item class (not wand then)
+
+            (*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0 )
+                                                            // 0 == any inventory type (not wand then)
+
         {
             DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
         }
@@ -7917,11 +7919,11 @@ int32 Unit::SpellBaseDamageBonus(SpellSchoolMask schoolMask)
     // ..done
     AuraList const& mDamageDone = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE);
     for(AuraList::const_iterator i = mDamageDone.begin();i != mDamageDone.end(); ++i)
-		if(((*i)->GetModifier()->m_miscvalue & schoolMask) != 0 &&
-		(*i)->GetSpellProto()->EquippedItemClass == -1 &&
-		                                                    // -1 == any item class (not wand then)
-		(*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0 )
-		                                                    // 0 == any inventory type (not wand then
+        if(((*i)->GetModifier()->m_miscvalue & schoolMask) != 0 &&
+        (*i)->GetSpellProto()->EquippedItemClass == -1 &&
+                                                            // -1 == any item class (not wand then)
+        (*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0 )
+                                                            // 0 == any inventory type (not wand then)
             DoneAdvertisedBenefit += (*i)->GetModifier()->m_amount;
 
     if (GetTypeId() == TYPEID_PLAYER)
@@ -8518,10 +8520,10 @@ bool Unit::IsDamageToThreatSpell(SpellEntry const * spellInfo) const
 void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attType, SpellEntry const *spellProto)
 {
     if(!pVictim)
-		return;
-		
-	if(*pdamage == 0)
-		return;
+        return;
+
+    if(*pdamage == 0)
+        return;
 
     uint32 creatureTypeMask = pVictim->GetCreatureTypeMask();
 
@@ -8561,8 +8563,8 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
                 APbonus += (*i)->GetModifier()->m_amount;
     }
 
-	if (APbonus!=0)                                         // Can be negative
-	{
+    if (APbonus!=0)                                         // Can be negative
+    {
         bool normalized = false;
         if(spellProto)
         {
@@ -8582,7 +8584,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     // ..taken
     AuraList const& mDamageTaken = pVictim->GetAurasByType(SPELL_AURA_MOD_DAMAGE_TAKEN);
     for(AuraList::const_iterator i = mDamageTaken.begin();i != mDamageTaken.end(); ++i)
-				if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask())
+        if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask())
             TakenFlatBenefit += (*i)->GetModifier()->m_amount;
 
     if(attType!=RANGED_ATTACK)
@@ -8594,9 +8596,9 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     float DoneTotalMod = 1.0f;
     float TakenTotalMod = 1.0f;
 
-	// ..done
-	// SPELL_AURA_MOD_DAMAGE_PERCENT_DONE included in weapon damage
-	// SPELL_AURA_MOD_OFFHAND_DAMAGE_PCT  included in weapon damage
+    // ..done
+    // SPELL_AURA_MOD_DAMAGE_PERCENT_DONE included in weapon damage
+    // SPELL_AURA_MOD_OFFHAND_DAMAGE_PCT  included in weapon damage
 
     AuraList const& mDamageDoneVersus = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE_VERSUS);
     for(AuraList::const_iterator i = mDamageDoneVersus.begin();i != mDamageDoneVersus.end(); ++i)
@@ -8606,7 +8608,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     // ..taken
     AuraList const& mModDamagePercentTaken = pVictim->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
     for(AuraList::const_iterator i = mModDamagePercentTaken.begin(); i != mModDamagePercentTaken.end(); ++i)
-		if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask())
+        if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask())
             TakenTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
 
     // .. taken pct: dummy auras
@@ -8674,19 +8676,19 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
             TakenTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
     }
 
-	float tmpDamage = float(int32(*pdamage) + DoneFlatBenefit) * DoneTotalMod;
+    float tmpDamage = float(int32(*pdamage) + DoneFlatBenefit) * DoneTotalMod;
 
     // apply spellmod to Done damage
     if(spellProto)
     {
         if(Player* modOwner = GetSpellModOwner())
-			modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DAMAGE, tmpDamage);
+            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DAMAGE, tmpDamage);
     }
 
     tmpDamage = (tmpDamage + TakenFlatBenefit)*TakenTotalMod;
 
     // bonus result can be negative
-	*pdamage =  tmpDamage > 0 ? uint32(tmpDamage) : 0;
+    *pdamage =  tmpDamage > 0 ? uint32(tmpDamage) : 0;
 }
 
 void Unit::ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply)

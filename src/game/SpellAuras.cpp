@@ -5705,27 +5705,40 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
     {
         if(Unit* caster = GetCaster())
         {
-			// Check for custom scaling, default is 0%
-				float CustomSpellPowerScaling = 0.0f;
-				float CustomAttackPowerScaling = 0.0f;
-				SpellBonusEntry const* bonus = spellmgr.GetSpellBonusData(m_spellProto->Id);
-				if (bonus)
-				{
-					CustomSpellPowerScaling = bonus->direct_damage;
-					CustomAttackPowerScaling = bonus->ap_bonus;
-				}
-				
-			//check for SpellMod Scaling
-				float SpellModSpellPowerScaling = 100.0f;
-				if( Player* modOwner = caster->GetSpellModOwner() )
-					modOwner->ApplySpellMod(m_spellProto->Id, SPELLMOD_SPELL_BONUS_DAMAGE, SpellModSpellPowerScaling);
-				SpellModSpellPowerScaling = (SpellModSpellPowerScaling - 100.0f)/100.0f;
-				
-				float LvlPenalty = caster->CalculateLevelPenalty(GetSpellProto());
-				
-				float DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto))*(CustomSpellPowerScaling + SpellModSpellPowerScaling);
-				DoneActualBenefit += caster->GetTotalAttackPowerValue(BASE_ATTACK) * CustomAttackPowerScaling;
-				DoneActualBenefit *= LvlPenalty;
+            float DoneActualBenefit = 0.0f;
+            switch(m_spellProto->SpellFamilyName)
+            {
+                case SPELLFAMILY_PRIEST:
+                    if(m_spellProto->SpellFamilyFlags == 0x1) //PW:S
+                    {
+                        //+30% from +healing bonus
+                        DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellProto)) * 0.3f;
+                        break;
+                    }
+                    break;
+                case SPELLFAMILY_MAGE:
+                    if(m_spellProto->SpellFamilyFlags == 0x80100 || m_spellProto->SpellFamilyFlags == 0x8 || m_spellProto->SpellFamilyFlags == 0x100000000LL)
+                    {
+                        //frost ward, fire ward, ice barrier
+                        //+10% from +spd bonus
+                        DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.1f;
+                        break;
+                    }
+                    break;
+                case SPELLFAMILY_WARLOCK:
+                    if(m_spellProto->SpellFamilyFlags == 0x00)
+                    {
+                        //shadow ward
+                        //+10% from +spd bonus
+                        DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.1f;
+                        break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellProto());
 
             m_modifier.m_amount += (int32)DoneActualBenefit;
 			
@@ -5839,7 +5852,7 @@ void Aura::PeriodicTick()
                     pdamage = pdamageReductedArmor;
                 }
 				
-				pdamage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), pdamage, DOT, GetStackAmount());
+                pdamage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), pdamage, DOT, GetStackAmount());
 
                 // Curse of Agony damage-per-tick calculation
                 if (GetSpellProto()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 0x0000000000000400LL) && GetSpellProto()->SpellIconID==544)

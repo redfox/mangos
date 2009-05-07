@@ -1279,7 +1279,7 @@ void Spell::EffectDummy(uint32 i)
                 // Bloodthirst
                 case 23881:
                 {
-					m_caster->CastCustomSpell(unitTarget, 23885, &damage, NULL, NULL, true, NULL);
+                    m_caster->CastCustomSpell(unitTarget, 23885, &damage, NULL, NULL, true, NULL);
                     return;
                 }
             }
@@ -2392,8 +2392,8 @@ void Spell::EffectPowerDrain(uint32 i)
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
     uint32 power = damage;
-	if ( drain_power == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
-		power -= ((Player*)unitTarget)->GetSpellCritDamageReduction(power);
+    if ( drain_power == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
+        power -= ((Player*)unitTarget)->GetSpellCritDamageReduction(power);
 
     int32 new_damage;
     if(curPower < power)
@@ -4230,7 +4230,7 @@ void Spell::EffectSummonPet(uint32 i)
         NewSummon->SetUInt32Value(UNIT_FIELD_FLAGS,UNIT_FLAG_PVP_ATTACKABLE);
 
     NewSummon->InitStatsForLevel(petlevel);
-	NewSummon->InitPetCreateSpells();
+    NewSummon->InitPetCreateSpells();
     NewSummon->InitTalentForLevel();
 
     if(NewSummon->getPetType()==SUMMON_PET)
@@ -4492,11 +4492,12 @@ void Spell::EffectWeaponDmg(uint32 i)
     bonus = int32(bonus*totalDamagePercentMod);
 
     // prevent negative damage
-	uint32 eff_damage = uint32(bonus > 0 ? bonus : 0);
-	
-	// Add melee damage bonuses (also check for negative)
-	m_caster->MeleeDamageBonus(unitTarget, &eff_damage, m_attackType, m_spellInfo);
-	m_damage+= eff_damage;
+    uint32 eff_damage = uint32(bonus > 0 ? bonus : 0);
+
+
+    // Add melee damage bonuses (also check for negative)
+    m_caster->MeleeDamageBonus(unitTarget, &eff_damage, m_attackType, m_spellInfo);
+    m_damage+= eff_damage;
 
     // Hemorrhage
     if(m_spellInfo->SpellFamilyName==SPELLFAMILY_ROGUE && (m_spellInfo->SpellFamilyFlags & 0x2000000))
@@ -4809,7 +4810,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         return;
                     unitTarget->HandleEmoteCommand(EMOTE_STATE_DANCE);
                     return;
-				}
+                }
                 // Escape artist
                 case 20589:
                 {

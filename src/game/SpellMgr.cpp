@@ -2142,9 +2142,9 @@ void SpellMgr::LoadPetLevelupSpellMap()
         if(!creatureFamily)                                 // not exist
             continue;
 
-		if(creatureFamily->petTalentType < 0)               // not hunter pet family
-			continue;
-		
+        if(creatureFamily->petTalentType < 0)               // not hunter pet family
+            continue;
+
         for(uint32 j = 0; j < sSpellStore.GetNumRows(); ++j)
         {
             spell = sSpellStore.LookupEntry(j);
