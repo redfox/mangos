@@ -846,6 +846,8 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 
     damage-=absorb+resist;
 
+    DealDamageMods(this,damage,&absorb);
+
     WorldPacket data(SMSG_ENVIRONMENTALDAMAGELOG, (21));
     data << uint64(GetGUID());
     data << uint8(type!=DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
@@ -3209,6 +3211,20 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool update_action_bar_
         WorldPacket data(SMSG_REMOVED_SPELL, 4);
         data << uint16(spell_id);
         GetSession()->SendPacket(&data);
+    }
+}
+
+
+void Player::RemoveSpellCooldown( uint32 spell_id, bool update /* = false */ )
+{
+    m_spellCooldowns.erase(spell_id);
+
+    if(update)
+    {
+        WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
+        data << uint32(spell_id);
+        data << uint64(GetGUID());
+        SendDirectMessage(&data);
     }
 }
 
@@ -9568,14 +9584,17 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                 {
                     if( Item* pBag = GetItemByPos( INVENTORY_SLOT_BAG_0, i ) )
                     {
-                        if( ItemPrototype const* pBagProto = pBag->GetProto() )
+                        if( pBag != pItem )
                         {
-                            if( pBagProto->Class==pProto->Class && (!swap || pBag->GetSlot() != eslot ) )
+                            if( ItemPrototype const* pBagProto = pBag->GetProto() )
                             {
-                                if(pBagProto->SubClass == ITEM_SUBCLASS_AMMO_POUCH)
-                                    return EQUIP_ERR_CAN_EQUIP_ONLY1_AMMOPOUCH;
-                                else
-                                    return EQUIP_ERR_CAN_EQUIP_ONLY1_QUIVER;
+                                if( pBagProto->Class==pProto->Class && (!swap || pBag->GetSlot() != eslot ) )
+                                {
+                                    if(pBagProto->SubClass == ITEM_SUBCLASS_AMMO_POUCH)
+                                        return EQUIP_ERR_CAN_EQUIP_ONLY1_AMMOPOUCH;
+                                    else
+                                        return EQUIP_ERR_CAN_EQUIP_ONLY1_QUIVER;
+                                }
                             }
                         }
                     }
@@ -16797,8 +16816,8 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
             return false;
         }
     }
-    // node must have pos if not spell case (npc!=0)
-    else if(!spellid)
+    // node must have pos if taxi master case (npc != NULL)
+    else if (npc)
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIUNSPECIFIEDSERVERERROR);
@@ -16850,8 +16869,10 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
         prevnode = lastnode;
     }
 
-    uint16 mount_id = objmgr.GetTaxiMount(sourcenode, GetTeam(), spellid != 0);
+    // get mount model (in case non taximaster (npc==NULL) allow more wide lookup)
+    uint16 mount_id = objmgr.GetTaxiMount(sourcenode, GetTeam(), npc == NULL);
 
+    // in spell case allow 0 model
     if (mount_id == 0 && spellid == 0 || sourcepath == 0)
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
