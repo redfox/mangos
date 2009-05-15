@@ -1616,7 +1616,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!(options & TELE_TO_NOT_UNSUMMON_PET))
         {
             //same map, only remove pet if out of range for new position
-            if(pet && pet->GetDistance(x,y,z) >= OWNER_MAX_DISTANCE)
+            if(pet && !pet->IsWithinDist3d(x,y,z, OWNER_MAX_DISTANCE))
                 UnsummonPetTemporaryIfAny();
         }
 
@@ -2302,10 +2302,10 @@ void Player::GiveLevel(uint32 level)
     SetPower(POWER_FOCUS, 0);
     SetPower(POWER_HAPPINESS, 0);
 
-    // give level to summoned pet
-    Pet* pet = GetPet();
-    if(pet && pet->getPetType()==SUMMON_PET)
-        pet->GivePetLevel(level);
+    // update level to hunter/summon pet
+    if (Pet* pet = GetPet())
+        pet->SynchronizeLevelWithOwner();
+
     GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
 }
 
@@ -2491,6 +2491,10 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_FOCUS, 0);
     SetPower(POWER_HAPPINESS, 0);
     SetPower(POWER_RUNIC_POWER, 0);
+
+    // update level to hunter/summon pet
+    if (Pet* pet = GetPet())
+        pet->SynchronizeLevelWithOwner();
 }
 
 void Player::SendInitialSpells()
@@ -20016,4 +20020,3 @@ bool Player::canSeeSpellClickOn(Creature const *c) const
     }
     return false;
 }
-

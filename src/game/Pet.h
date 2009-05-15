@@ -114,7 +114,7 @@ typedef std::vector<uint32> AutoSpellList;
 
 #define ACTIVE_SPELLS_MAX           4
 
-#define OWNER_MAX_DISTANCE 100
+#define OWNER_MAX_DISTANCE 100.0f
 
 #define PET_FOLLOW_DIST  1
 #define PET_FOLLOW_ANGLE (M_PI/2)
@@ -161,6 +161,7 @@ class Pet : public Creature
         HappinessState GetHappinessState();
         void GivePetXP(uint32 xp);
         void GivePetLevel(uint32 level);
+        void SynchronizeLevelWithOwner();
         bool InitStatsForLevel(uint32 level);
         bool HaveInDiet(ItemPrototype const* item) const;
         uint32 GetCurrentFoodBenefitLevel(uint32 itemlevel);
