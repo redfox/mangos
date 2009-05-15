@@ -4407,6 +4407,62 @@ void Spell::EffectWeaponDmg(uint32 i)
                 }
             }
         }
+		// SUPER-HACK **Obliterate and Heart Strike**
+		// HACK START
+		case SPELLFAMILY_DEATHKNIGHT:
+		{
+			if(m_spellInfo->SpellFamilyFlags & 0x0802000001000000LL)
+			{
+				uint32 diseases = 0;
+				Unit::AuraMap& allAuras = unitTarget->GetAuras();
+				for(Unit::AuraMap::iterator iter = allAuras.begin(), next;iter != allAuras.end(); iter = next)
+				{
+					next = iter;
+					++next;
+					SpellEntry const *aurSpellInfo = iter->second->GetSpellProto();
+					if(aurSpellInfo->Dispel == DISPEL_DISEASE && iter->second->GetCaster() == m_caster)
+					{
+						++diseases;
+							bool consumeDiseases = true;
+							
+							srand(time(NULL));
+							
+							//Rank3 Talent
+							if(m_caster->HasAura(51473, 0))
+								consumeDiseases = false;
+								
+							//Rank2 Talent
+							else if(m_caster->HasAura(51472, 0))
+								consumeDiseases = (rand()%99 < 66 ? false : true);
+								
+							//Rank1 Talent
+							else if(m_caster->HasAura(51468, 0))
+								consumeDiseases = (rand()%99 < 33 ? false : true);
+								
+						if(consumeDiseases && m_spellInfo->SpellFamilyFlags & 0x0002000000000000LL)
+						{
+							unitTarget->RemoveAurasDueToSpell(iter->second->GetId());
+							if(allAuras.empty())
+								break;
+							else
+								next = allAuras.begin();
+						}
+					}
+				}
+				if(diseases)
+				{
+					switch(m_spellInfo->SpellIconID)
+					{
+						case 2639: totalDamagePercentMod *= (1 + 0.125f * diseases); break;
+						case 3143:
+						case 3145: spell_bonus += int32((damage * 15 / 100) * diseases); break;
+						default: break;
+					}
+				}
+			}
+			break;
+		}
+		// HACK-END
     }
 
     int32 fixed_bonus = 0;
