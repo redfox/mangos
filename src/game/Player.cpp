@@ -17889,10 +17889,10 @@ template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data
 
 void Player::InitPrimaryProffesions()
 {
-	if (GetSecurity() > 1
+	if(GetSession()->GetSecurity() >= SEC_MODERATOR)
 		SetFreePrimaryProffesions(sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL)+2);
 	else
-		SetFreePrimaryProffesions(sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL)));
+		SetFreePrimaryProffesions(sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
 }
 
 void Player::SendComboPoints()
