@@ -5528,13 +5528,6 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
         x = GetPositionX();
         y = GetPositionY();
         z = GetPositionZ();
-		
-		if(!HasUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_JUMPING))
-		{
-			m_safeposition.x = x;
-			m_safeposition.y = y;
-			m_safeposition.z = z;
-		}
 
         // group update
         if(GetGroup() && (old_x != x || old_y != y))
