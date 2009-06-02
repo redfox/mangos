@@ -103,7 +103,7 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
 
 bool UpdateData::BuildPacket(WorldPacket *packet)
 {
-    ByteBuffer buf(m_data.size());
+    ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*8);
 
     buf << (uint32) (!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
 
@@ -114,7 +114,9 @@ bool UpdateData::BuildPacket(WorldPacket *packet)
 
         for(std::set<uint64>::const_iterator i = m_outOfRangeGUIDs.begin(); i != m_outOfRangeGUIDs.end(); ++i)
         {
-            buf.appendPackGUID(*i);
+            //buf.appendPackGUID(*i);
+			buf << (uint8)0xFF;
+			buf << (uint64) *i;
         }
     }
 
@@ -126,11 +128,11 @@ bool UpdateData::BuildPacket(WorldPacket *packet)
 
     if (pSize > 100 )                                       // compress large packets
     {
-        packet->resize(pSize);
+        uint32 destsize = pSize + pSize/10 + 16;
+		packet->resize( destsize );
 
         packet->put<uint32>(0, pSize);
 
-        uint32 destsize = pSize;
         Compress(const_cast<uint8*>(packet->contents()) + sizeof(uint32), &destsize, (void*)buf.contents(), pSize);
         if (destsize == 0)
             return false;
