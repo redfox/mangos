@@ -5090,8 +5090,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 target = GetPet();
                 if (!target)
                     return false;
+                basepoints0 = damage * 15 / 100;
                 triggered_spell_id = 54181;
-                basepoints0 = damage * triggerAmount / 100;
                 break;
             }
             switch(dummySpell->Id)
@@ -8433,13 +8433,6 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo)
     if (!spellInfo)
         return false;
 
-    //FIX ME this hack: don't get feared if stunned
-    if (spellInfo->Mechanic == MECHANIC_FEAR )
-    {
-        if ( hasUnitState(UNIT_STAT_STUNNED) )
-            return true;
-    }
-
     //TODO add spellEffect immunity checks!, player with flag in bg is imune to imunity buffs from other friendly players!
     //SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_EFFECT];
 
@@ -11486,7 +11479,7 @@ Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id)
 
     pet->SetOwnerGUID(GetGUID());
     pet->SetCreatorGUID(GetGUID());
-    pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, getFaction());
+    pet->setFaction(getFaction());
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spell_id);
 
     if(GetTypeId()==TYPEID_PLAYER)

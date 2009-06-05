@@ -3097,7 +3097,7 @@ void Aura::HandleModPossess(bool apply, bool Real)
     if( apply )
     {
         m_target->SetCharmerGUID(GetCasterGUID());
-        m_target->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, caster->getFaction());
+        m_target->setFaction(caster->getFaction());
 
         caster->SetCharm(m_target);
 
@@ -3139,7 +3139,7 @@ void Aura::HandleModPossess(bool apply, bool Real)
         else if(m_target->GetTypeId() == TYPEID_UNIT)
         {
             CreatureInfo const *cinfo = ((Creature*)m_target)->GetCreatureInfo();
-            m_target->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cinfo->faction_A);
+            m_target->setFaction(cinfo->faction_A);
         }
 
         caster->SetCharm(NULL);
@@ -3229,7 +3229,7 @@ void Aura::HandleModCharm(bool apply, bool Real)
         if( apply )
         {
             m_target->SetCharmerGUID(GetCasterGUID());
-            m_target->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, caster->getFaction());
+            m_target->setFaction(caster->getFaction());
             m_target->CastStop(m_target == caster ? GetId() : 0);
             caster->SetCharm(m_target);
 
@@ -3278,12 +3278,12 @@ void Aura::HandleModCharm(bool apply, bool Real)
                 if(((Creature*)m_target)->isPet())
                 {
                     if(Unit* owner = m_target->GetOwner())
-                        m_target->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, owner->getFaction());
+                        m_target->setFaction(owner->getFaction());
                     else if(cinfo)
-                        m_target->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cinfo->faction_A);
+                        m_target->setFaction(cinfo->faction_A);
                 }
                 else if(cinfo)                              // normal creature
-                    m_target->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cinfo->faction_A);
+                    m_target->setFaction(cinfo->faction_A);
 
                 // restore UNIT_FIELD_BYTES_0
                 if(cinfo && caster->GetTypeId() == TYPEID_PLAYER && caster->getClass() == CLASS_WARLOCK && cinfo->type == CREATURE_TYPE_DEMON)
@@ -6509,8 +6509,42 @@ void Aura::PeriodicDummyTick()
         }
         case SPELLFAMILY_ROGUE:
         {
-//            switch (spell->Id)
-//            {
+            switch (spell->Id)
+            {
+                case 51690:
+                {
+                    std::list<Unit*> targets;
+                    {
+                        // eff_radius ==0
+                        float radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(spell->rangeIndex));
+
+                        CellPair p(MaNGOS::ComputeCellPair(caster->GetPositionX(),caster->GetPositionY()));
+                        Cell cell(p);
+                        cell.data.Part.reserved = ALL_DISTRICT;
+
+                        MaNGOS::AnyUnfriendlyVisibleUnitInObjectRangeCheck u_check(caster, caster, radius);
+                        MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyVisibleUnitInObjectRangeCheck> checker(caster,targets, u_check);
+
+                        TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyVisibleUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
+                        TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyVisibleUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
+
+                        CellLock<GridReadGuard> cell_lock(cell, p);
+
+                        cell_lock->Visit(cell_lock, grid_object_checker,  *caster->GetMap());
+                        cell_lock->Visit(cell_lock, world_object_checker, *caster->GetMap());
+                    }
+
+                    if(targets.empty())
+                        return;
+
+                    std::list<Unit*>::const_iterator itr = targets.begin();
+                    std::advance(itr, rand()%targets.size());
+                    Unit* target = *itr;
+
+                    caster->CastSpell(target, 57840, true);
+                    caster->CastSpell(target, 57841, true);
+                    return;
+                }
                 // Master of Subtlety
 //                case 31666: break;
                 // Killing Spree
@@ -6519,7 +6553,7 @@ void Aura::PeriodicDummyTick()
 //                case 58428: break;
 //                default:
 //                    break;
-//            }
+            }
             break;
         }
         case SPELLFAMILY_HUNTER:
