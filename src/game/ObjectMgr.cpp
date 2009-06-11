@@ -1688,11 +1688,17 @@ void ObjectMgr::LoadItemPrototypes()
         {
             for (int j = 0; j < MAX_ITEM_PROTO_SPELLS; ++j)
             {
-                if(proto->Spells[j].SpellTrigger >= MAX_ITEM_SPELLTRIGGER || proto->Spells[j].SpellTrigger == ITEM_SPELLTRIGGER_LEARN_SPELL_ID)
+                if (proto->Spells[j].SpellTrigger >= MAX_ITEM_SPELLTRIGGER || proto->Spells[j].SpellTrigger == ITEM_SPELLTRIGGER_LEARN_SPELL_ID)
                 {
                     sLog.outErrorDb("Item (Entry: %u) has wrong item spell trigger value in spelltrigger_%d (%u)",i,j+1,proto->Spells[j].SpellTrigger);
                     const_cast<ItemPrototype*>(proto)->Spells[j].SpellId = 0;
                     const_cast<ItemPrototype*>(proto)->Spells[j].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
+                }
+                // on hit can be sued only at weapon
+                else if (proto->Spells[j].SpellTrigger == ITEM_SPELLTRIGGER_CHANCE_ON_HIT)
+                {
+                    if(proto->Class != ITEM_CLASS_WEAPON)
+                        sLog.outErrorDb("Item (Entry: %u) isn't weapon (Class: %u) but has on hit spelltrigger_%d (%u), it will not triggered.",i,proto->Class,j+1,proto->Spells[j].SpellTrigger);
                 }
 
                 if(proto->Spells[j].SpellId)
@@ -1863,14 +1869,19 @@ void ObjectMgr::LoadItemRequiredTarget()
                     if (lower != upper)
                         break;
 
-                    if (pSpellInfo->EffectImplicitTargetA[i] == TARGET_CHAIN_DAMAGE ||
-                        pSpellInfo->EffectImplicitTargetB[i] == TARGET_CHAIN_DAMAGE ||
-                        pSpellInfo->EffectImplicitTargetA[i] == TARGET_DUELVSPLAYER ||
-                        pSpellInfo->EffectImplicitTargetB[i] == TARGET_DUELVSPLAYER)
+                    for (int j = 0; j < 3; ++j)
                     {
-                        bIsItemSpellValid = true;
-                        break;
+                        if (pSpellInfo->EffectImplicitTargetA[j] == TARGET_CHAIN_DAMAGE ||
+                            pSpellInfo->EffectImplicitTargetB[j] == TARGET_CHAIN_DAMAGE ||
+                            pSpellInfo->EffectImplicitTargetA[j] == TARGET_DUELVSPLAYER ||
+                            pSpellInfo->EffectImplicitTargetB[j] == TARGET_DUELVSPLAYER)
+                        {
+                            bIsItemSpellValid = true;
+                            break;
+                        }
                     }
+                    if (bIsItemSpellValid)
+                        break;
                 }
             }
         }
