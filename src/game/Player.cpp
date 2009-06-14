@@ -1861,7 +1861,7 @@ void Player::Regenerate(Powers power)
         case POWER_RAGE:                                    // Regenerate rage
         {
             float RageDecreaseRate = sWorld.getRate(RATE_POWER_RAGE_LOSS);
-            addvalue = 30 * RageDecreaseRate;               // 3 rage by tick
+            addvalue = 20 * RageDecreaseRate;               // 2 rage by tick (= 2 seconds => 1 rage/sec)
         }   break;
         case POWER_ENERGY:                                  // Regenerate energy (rogue)
             addvalue = 20;
@@ -3079,6 +3079,11 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool update_action_bar_
     for(SpellChainMapNext::const_iterator itr2 = nextMap.lower_bound(spell_id); itr2 != nextMap.upper_bound(spell_id); ++itr2)
         if(HasSpell(itr2->second) && !GetTalentSpellPos(itr2->second))
             removeSpell(itr2->second,disabled);
+
+    // re-search, it can be corrupted in prev loop
+    itr = m_spells.find(spell_id);
+    if (itr == m_spells.end())
+        return;                                             // already unleared
 
     bool cur_active    = itr->second->active;
     bool cur_dependent = itr->second->dependent;
@@ -5554,17 +5559,43 @@ void Player::SaveRecallPosition()
 
 void Player::SendMessageToSet(WorldPacket *data, bool self)
 {
-    GetMap()->MessageBroadcast(this, data, self);
+    Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+    if(_map)
+    {
+        _map->MessageBroadcast(this, data, self);
+        return;
+    }
+
+    //if player is not in world and map in not created/already destroyed
+    //no need to create one, just send packet for itself!
+    if(self)
+        GetSession()->SendPacket(data);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self)
 {
-    GetMap()->MessageDistBroadcast(this, data, dist, self);
+    Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+    if(_map)
+    {
+        _map->MessageDistBroadcast(this, data, dist, self);
+        return;
+    }
+
+    if(self)
+        GetSession()->SendPacket(data);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool own_team_only)
 {
-    GetMap()->MessageDistBroadcast(this, data, dist, self,own_team_only);
+    Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+    if(_map)
+    {
+        _map->MessageDistBroadcast(this, data, dist, self, own_team_only);
+        return;
+    }
+
+    if(self)
+        GetSession()->SendPacket(data);
 }
 
 void Player::SendDirectMessage(WorldPacket *data)
@@ -18050,10 +18081,16 @@ void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
         type = RAID_INSTANCE_WARNING_MIN;
     else
         type = RAID_INSTANCE_WARNING_MIN_SOON;
-    WorldPacket data(SMSG_RAID_INSTANCE_MESSAGE, 4+4+4);
+    WorldPacket data(SMSG_RAID_INSTANCE_MESSAGE, 4+4+4+4);
     data << uint32(type);
     data << uint32(mapid);
+    data << uint32(0);                                      // may be difficulty
     data << uint32(time);
+    if(type == RAID_INSTANCE_WELCOME)
+    {
+        data << uint8(0);
+        data << uint8(0);
+    }
     GetSession()->SendPacket(&data);
 }
 
