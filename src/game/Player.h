@@ -273,8 +273,6 @@ struct Runes
     }
 };
 
-typedef std::set<uint64> GuardianPetList;
-
 struct EnchantDuration
 {
     EnchantDuration() : item(NULL), slot(MAX_ENCHANTMENT_SLOT), leftduration(0) {};
@@ -886,7 +884,7 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         bool TeleportTo(WorldLocation const &loc, uint32 options = 0)
         {
-            return TeleportTo(loc.mapid, loc.x, loc.y, loc.z, options);
+            return TeleportTo(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, options);
         }
 
         void SetSummonPoint(uint32 mapid, float x, float y, float z)
@@ -913,7 +911,7 @@ class MANGOS_DLL_SPEC Player : public Unit
         void SendInitialPacketsBeforeAddToMap();
         void SendInitialPacketsAfterAddToMap();
         void SendTransferAborted(uint32 mapid, uint8 reason, uint8 arg = 0);
-        void SendInstanceResetWarning(uint32 mapid, uint32 time);
+        void SendInstanceResetWarning(uint32 mapid, uint32 difficulty, uint32 time);
 
         Creature* GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask);
         bool CanInteractWithNPCs(bool alive = true) const;
@@ -991,10 +989,6 @@ class MANGOS_DLL_SPEC Player : public Unit
         void RemoveMiniPet();
         Pet* GetMiniPet();
         void SetMiniPet(Pet* pet) { m_miniPet = pet->GetGUID(); }
-        void RemoveGuardians();
-        bool HasGuardianWithEntry(uint32 entry);
-        void AddGuardian(Pet* pet) { m_guardianPets.insert(pet->GetGUID()); }
-        GuardianPetList const& GetGuardians() const { return m_guardianPets; }
         void Uncharm();
         uint32 GetPhaseMaskForSpawn() const;                // used for proper set phase for DB at GM-mode creature/GO spawn
 
@@ -1538,6 +1532,7 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         void SetDifficulty(uint32 dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
         uint8 GetDifficulty() { return m_dungeonDifficulty; }
+        bool IsHeroic() { return m_dungeonDifficulty == DIFFICULTY_HEROIC; }
 
         bool UpdateSkill(uint32 skill_id, uint32 step);
         bool UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step);
@@ -1615,11 +1610,10 @@ class MANGOS_DLL_SPEC Player : public Unit
         void SendDelayResponse(const uint32);
         void SendLogXPGain(uint32 GivenXP,Unit* victim,uint32 RestXP);
 
-        //notifiers
+        // notifiers
         void SendAttackSwingCantAttack();
         void SendAttackSwingCancelAttack();
         void SendAttackSwingDeadTarget();
-        void SendAttackSwingNotStanding();
         void SendAttackSwingNotInRange();
         void SendAttackSwingBadFacingAttack();
         void SendAutoRepeatCancel();
@@ -2311,7 +2305,6 @@ class MANGOS_DLL_SPEC Player : public Unit
         uint64 m_auraUpdateMask;
 
         uint64 m_miniPet;
-        GuardianPetList m_guardianPets;
 
         // Player summoning
         time_t m_summon_expire;

@@ -223,7 +223,7 @@ bool PlayerTaxi::LoadTaxiDestinationsFromString( const std::string& values, uint
     }
 
     // can't load taxi path without mount set (quest taxi path?)
-    if(!objmgr.GetTaxiMount(GetTaxiSource(),team,true))
+    if(!objmgr.GetTaxiMountDisplayId(GetTaxiSource(),team,true))
         return false;
 
     return true;
@@ -1372,7 +1372,6 @@ void Player::setDeathState(DeathState s)
 
         // remove uncontrolled pets
         RemoveMiniPet();
-        RemoveGuardians();
 
         // save value before aura remove in Unit::setDeathState
         ressSpellId = GetUInt32Value(PLAYER_SELF_RES_SPELL);
@@ -1764,7 +1763,6 @@ void Player::RemoveFromWorld()
         Uncharm();
         UnsummonAllTotems();
         RemoveMiniPet();
-        RemoveGuardians();
     }
 
     for(int i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; ++i)
@@ -2044,7 +2042,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
 bool Player::IsUnderWater() const
 {
     return IsInWater() &&
-        GetPositionZ() < (MapManager::Instance().GetBaseMap(GetMapId())->GetWaterLevel(GetPositionX(),GetPositionY())-2);
+        GetPositionZ() < (GetBaseMap()->GetWaterLevel(GetPositionX(),GetPositionY())-2);
 }
 
 void Player::SetInWater(bool apply)
@@ -5625,7 +5623,7 @@ void Player::CheckExploreSystem()
     if (isInFlight())
         return;
 
-    uint16 areaFlag=MapManager::Instance().GetBaseMap(GetMapId())->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ());
+    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ());
     if(areaFlag==0xffff)
         return;
     int offset = areaFlag / 32;
@@ -14063,7 +14061,9 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         }
         else
         {
-            Relocate(GetBattleGroundEntryPoint());
+            const WorldLocation& _loc = GetBattleGroundEntryPoint();
+            SetMapId(_loc.mapid);
+            Relocate(_loc.coord_x, _loc.coord_y, _loc.coord_z, _loc.orientation);
             //RemoveArenaAuras(true);
         }
     }
@@ -14175,7 +14175,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         if(at)
             Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
         else
-            sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no aretrigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", GetName(), GetGUIDLow(), GetMapId());
+            sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", GetName(), GetGUIDLow(), GetMapId());
     }
 
     SaveRecallPosition();
@@ -15212,6 +15212,8 @@ void Player::SendRaidInfo()
     size_t p_counter = data.wpos();
     data << uint32(counter);                                // placeholder
 
+    time_t now = time(NULL);
+
     for(int i = 0; i < TOTAL_DIFFICULTIES; ++i)
     {
         for (BoundInstancesMap::const_iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
@@ -15219,10 +15221,11 @@ void Player::SendRaidInfo()
             if(itr->second.perm)
             {
                 InstanceSave *save = itr->second.save;
-                data << uint32(save->GetMapId());
-                data << uint32(save->GetResetTime() - time(NULL));
-                data << uint32(save->GetInstanceId());
-                data << uint32(save->GetDifficulty());
+                data << uint32(save->GetMapId());           // map id
+                data << uint32(save->GetDifficulty());      // difficulty
+                data << uint64(save->GetInstanceId());      // instance id
+                data << uint32(save->GetResetTime() - now); // reset time
+                data << uint32(0);                          // is extended
                 ++counter;
             }
         }
@@ -15427,10 +15430,10 @@ void Player::SaveToDB()
     {
         ss << GetTeleportDest().mapid << ", "
         << (uint32)GetDifficulty() << ", "
-        << finiteAlways(GetTeleportDest().x) << ", "
-        << finiteAlways(GetTeleportDest().y) << ", "
-        << finiteAlways(GetTeleportDest().z) << ", "
-        << finiteAlways(GetTeleportDest().o) << ", '";
+        << finiteAlways(GetTeleportDest().coord_x) << ", "
+        << finiteAlways(GetTeleportDest().coord_y) << ", "
+        << finiteAlways(GetTeleportDest().coord_z) << ", "
+        << finiteAlways(GetTeleportDest().orientation) << ", '";
     }
 
     uint16 i;
@@ -15502,10 +15505,10 @@ void Player::SaveToDB()
     ss << GetBGTeam();
     ss << ", ";
     ss << m_bgEntryPoint.mapid << ", "
-       << finiteAlways(m_bgEntryPoint.x) << ", "
-       << finiteAlways(m_bgEntryPoint.y) << ", "
-       << finiteAlways(m_bgEntryPoint.z) << ", "
-       << finiteAlways(m_bgEntryPoint.o);
+       << finiteAlways(m_bgEntryPoint.coord_x) << ", "
+       << finiteAlways(m_bgEntryPoint.coord_y) << ", "
+       << finiteAlways(m_bgEntryPoint.coord_z) << ", "
+       << finiteAlways(m_bgEntryPoint.orientation);
     ss << ")";
 
     CharacterDatabase.Execute( ss.str().c_str() );
@@ -16002,12 +16005,6 @@ void Player::Customize(uint64 guid, uint8 gender, uint8 skin, uint8 face, uint8 
     SaveValuesArrayInDB(tokens, guid);
 }
 
-void Player::SendAttackSwingNotStanding()
-{
-    WorldPacket data(SMSG_ATTACKSWING_NOTSTANDING, 0);
-    GetSession()->SendPacket( &data );
-}
-
 void Player::SendAttackSwingDeadTarget()
 {
     WorldPacket data(SMSG_ATTACKSWING_DEADTARGET, 0);
@@ -16216,7 +16213,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
             m_miniPet = 0;
             break;
         case GUARDIAN_PET:
-            m_guardianPets.erase(pet->GetGUID());
+            RemoveGuardian(pet);
             break;
         default:
             if(GetPetGUID() == pet->GetGUID())
@@ -16271,32 +16268,6 @@ Pet* Player::GetMiniPet()
     if(!m_miniPet)
         return NULL;
     return ObjectAccessor::GetPet(m_miniPet);
-}
-
-void Player::RemoveGuardians()
-{
-    while(!m_guardianPets.empty())
-    {
-        uint64 guid = *m_guardianPets.begin();
-        if(Pet* pet = ObjectAccessor::GetPet(guid))
-            pet->Remove(PET_SAVE_AS_DELETED);
-
-        m_guardianPets.erase(guid);
-    }
-}
-
-bool Player::HasGuardianWithEntry(uint32 entry)
-{
-    // pet guid middle part is entry (and creature also)
-    // and in guardian list must be guardians with same entry _always_
-    for(GuardianPetList::const_iterator itr = m_guardianPets.begin(); itr != m_guardianPets.end(); ++itr)
-    {
-        if(Pet* pet = ObjectAccessor::GetPet(*itr))
-            if (pet->GetEntry() == entry)
-                return true;
-    }
-
-    return false;
 }
 
 void Player::Uncharm()
@@ -16918,10 +16889,10 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
     }
 
     // get mount model (in case non taximaster (npc==NULL) allow more wide lookup)
-    uint16 mount_id = objmgr.GetTaxiMount(sourcenode, GetTeam(), npc == NULL);
+    uint32 mount_display_id = objmgr.GetTaxiMountDisplayId(sourcenode, GetTeam(), npc == NULL);
 
     // in spell case allow 0 model
-    if (mount_id == 0 && spellid == 0 || sourcepath == 0)
+    if (mount_display_id == 0 && spellid == 0 || sourcepath == 0)
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIUNSPECIFIEDSERVERERROR);
@@ -16958,7 +16929,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
 
     sLog.outDebug("WORLD: Sent SMSG_ACTIVATETAXIREPLY");
 
-    GetSession()->SendDoFlight(mount_id, sourcepath);
+    GetSession()->SendDoFlight(mount_display_id, sourcepath);
 
     return true;
 }
@@ -18069,7 +18040,7 @@ void Player::SendTransferAborted(uint32 mapid, uint8 reason, uint8 arg)
     GetSession()->SendPacket(&data);
 }
 
-void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
+void Player::SendInstanceResetWarning( uint32 mapid, uint32 difficulty, uint32 time )
 {
     // type of warning, based on the time remaining until reset
     uint32 type;
@@ -18081,15 +18052,16 @@ void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
         type = RAID_INSTANCE_WARNING_MIN;
     else
         type = RAID_INSTANCE_WARNING_MIN_SOON;
+
     WorldPacket data(SMSG_RAID_INSTANCE_MESSAGE, 4+4+4+4);
     data << uint32(type);
     data << uint32(mapid);
-    data << uint32(0);                                      // may be difficulty
+    data << uint32(difficulty);                             // difficulty
     data << uint32(time);
     if(type == RAID_INSTANCE_WELCOME)
     {
-        data << uint8(0);
-        data << uint8(0);
+        data << uint8(0);                                   // is your (1)
+        data << uint8(0);                                   // is extended (1), ignored if prev field is 0
     }
     GetSession()->SendPacket(&data);
 }
@@ -18482,18 +18454,20 @@ void Player::UpdateForQuestWorldObjects()
             Creature *obj = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, *itr);
             if(!obj)
                 continue;
-            // check if this unit requires quest specific flags
 
-            SpellClickInfoMap const& map = objmgr.mSpellClickInfoMap;
-            for(SpellClickInfoMap::const_iterator itr = map.lower_bound(obj->GetEntry()); itr != map.upper_bound(obj->GetEntry()); ++itr)
+            // check if this unit requires quest specific flags
+            if(!obj->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_SPELLCLICK))
+                continue;
+
+            SpellClickInfoMapBounds clickPair = objmgr.GetSpellClickInfoMapBounds(obj->GetEntry());
+            for(SpellClickInfoMap::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
             {
-                if(itr->second.questId != 0)
+                if(itr->second.questStart || itr->second.questEnd)
                 {
                     obj->BuildCreateUpdateBlockForPlayer(&udata,this);
                     break;
                 }
             }
-
         }
     }
     udata.BuildPacket(&packet);
@@ -20009,12 +19983,14 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
 
 bool Player::canSeeSpellClickOn(Creature const *c) const
 {
-    SpellClickInfoMap const& map = objmgr.mSpellClickInfoMap;
-    for(SpellClickInfoMap::const_iterator itr = map.lower_bound(c->GetEntry()); itr != map.upper_bound(c->GetEntry()); ++itr)
-    {
-        if(itr->second.questId == 0 || GetQuestStatus(itr->second.questId) == QUEST_STATUS_INCOMPLETE)
+    if(!c->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_SPELLCLICK))
+        return false;
+
+    SpellClickInfoMapBounds clickPair = objmgr.GetSpellClickInfoMapBounds(c->GetEntry());
+    for(SpellClickInfoMap::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
+        if(itr->second.IsFitToRequirements(this))
             return true;
-    }
+
     return false;
 }
 

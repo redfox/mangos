@@ -767,8 +767,12 @@ void Spell::prepareDataForTriggerSystem()
     {
         switch (m_spellInfo->SpellFamilyName)
         {
-            case SPELLFAMILY_MAGE:    // Arcane Missles / Blizzard triggers need do it
+            case SPELLFAMILY_MAGE:
+                // Arcane Missles / Blizzard triggers need do it
                 if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000200080))
+                    m_canTrigger = true;
+                // Clearcasting trigger need do it
+                else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000200000000) && m_spellInfo->SpellFamilyFlags2 & 0x8)
                     m_canTrigger = true;
                 break;
             case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Seed of Corruption triggers need do it
@@ -4721,8 +4725,9 @@ bool Spell::CanAutoCast(Unit* target)
             }
             else
             {
-                if( target->GetAuras().count(Unit::spellEffectPair(m_spellInfo->Id, j)) >= m_spellInfo->StackAmount)
-                    return false;
+                if(Aura* aura = target->GetAura(m_spellInfo->Id, j))
+                    if(aura->GetStackAmount() >= m_spellInfo->StackAmount)
+                        return false;
             }
         }
         else if ( IsAreaAuraEffect( m_spellInfo->Effect[j] ))
