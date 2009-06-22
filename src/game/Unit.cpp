@@ -1752,7 +1752,6 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                     continue;
                 }
 
-/*
                 // Reflective Shield
                 if (spellProto->SpellFamilyFlags == 0x1)
                 {
@@ -1782,7 +1781,6 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                     break;
                 }
                 break;
-*/
             }
             case SPELLFAMILY_SHAMAN:
             {
