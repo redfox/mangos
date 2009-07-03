@@ -1793,7 +1793,7 @@ void Spell::EffectDummy(uint32 i)
 				float z = m_caster->GetPositionZ()+1;
 				float orientation = unitTarget->GetOrientation();
 				m_caster->CastSpell(unitTarget,49560,true,NULL);
-				unitTarget->SendMonsterMove(x,y,z,0,MOVEMENTFLAG_JUMPING,1);
+				unitTarget->SendMonsterMove(x,y,z,0,MONSTER_MOVE_WALK,1);
 				if (unitTarget->GetTypeId()==TYPEID_PLAYER)
 					unitTarget->NearTeleportTo(x,y,z,orientation,false);
 				return;
