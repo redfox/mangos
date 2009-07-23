@@ -23,17 +23,18 @@
 // For more high level function for sSpellStore data
 
 #include "SharedDefines.h"
+#include "SpellAuraDefines.h"
 #include "DBCStructure.h"
+#include "DBCStores.h"
 #include "Database/SQLStorage.h"
 
 #include "Utilities/UnorderedMap.h"
-
-#include "Player.h"
 
 #include <map>
 
 class Player;
 class Spell;
+struct SpellModifier;
 
 extern SQLStorage sSpellThreatStore;
 
@@ -67,15 +68,16 @@ enum SpellFamilyNames
 };
 
 //Some SpellFamilyFlags
-#define SPELLFAMILYFLAG_ROGUE_VANISH            UI64LIT(0x000000800)
-#define SPELLFAMILYFLAG_ROGUE_STEALTH           UI64LIT(0x000400000)
-#define SPELLFAMILYFLAG_ROGUE_BACKSTAB          UI64LIT(0x000800004)
-#define SPELLFAMILYFLAG_ROGUE_SAP               UI64LIT(0x000000080)
-#define SPELLFAMILYFLAG_ROGUE_FEINT             UI64LIT(0x008000000)
-#define SPELLFAMILYFLAG_ROGUE_KIDNEYSHOT        UI64LIT(0x000200000)
-#define SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE   UI64LIT(0x9003E0000)
+#define SPELLFAMILYFLAG_ROGUE_VANISH            UI64LIT(0x0000000000000800)
+#define SPELLFAMILYFLAG_ROGUE_STEALTH           UI64LIT(0x0000000000400000)
+#define SPELLFAMILYFLAG_ROGUE_BACKSTAB          UI64LIT(0x0000000000800004)
+#define SPELLFAMILYFLAG_ROGUE_SAP               UI64LIT(0x0000000000000080)
+#define SPELLFAMILYFLAG_ROGUE_FEINT             UI64LIT(0x0000000008000000)
+#define SPELLFAMILYFLAG_ROGUE_KIDNEYSHOT        UI64LIT(0x0000000000200000)
+#define SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE   UI64LIT(0x00000009003E0000)
 
 #define SPELLFAMILYFLAG_PALADIN_SEALS           UI64LIT(0x26000C000A000000)
+
 // Spell clasification
 enum SpellSpecific
 {
@@ -128,6 +130,14 @@ inline bool IsSpellHaveEffect(SpellEntry const *spellInfo, SpellEffects effect)
     return false;
 }
 
+inline bool IsSpellHaveAura(SpellEntry const *spellInfo, AuraType aura)
+{
+    for(int i= 0; i < 3; ++i)
+        if(AuraType(spellInfo->EffectApplyAuraName[i])==aura)
+            return true;
+    return false;
+}
+
 bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
 
 inline bool IsSealSpell(SpellEntry const *spellInfo)
@@ -145,7 +155,9 @@ inline bool IsElementalShield(SpellEntry const *spellInfo)
 
 inline bool IsExplicitDiscoverySpell(SpellEntry const *spellInfo)
 {
-    return spellInfo->Effect[0]==SPELL_EFFECT_CREATE_RANDOM_ITEM && spellInfo->Effect[1]==SPELL_EFFECT_SCRIPT_EFFECT;
+    return spellInfo->Effect[0] == SPELL_EFFECT_CREATE_RANDOM_ITEM
+        && spellInfo->Effect[1] == SPELL_EFFECT_SCRIPT_EFFECT
+        || spellInfo->Id == 64323;                          // Book of Glyph Mastery (Effect0==SPELL_EFFECT_SCRIPT_EFFECT without any other data)
 }
 
 inline bool IsLootCraftingSpell(SpellEntry const *spellInfo)
@@ -185,8 +197,6 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB);
 
 bool IsSingleTargetSpell(SpellEntry const *spellInfo);
 bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2);
-
-bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId);
 
 inline bool IsPointEffectTarget( Targets target )
 {
@@ -334,13 +344,6 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
 bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
 int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellEntry const* spellproto);
-
-// Spell affects related declarations (accessed using SpellMgr functions)
-struct SpellAffectEntry
-{
-    uint32 SpellClassMask[3];
-};
-typedef UNORDERED_MAP<uint32, SpellAffectEntry> SpellAffectMap;
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
 enum ProcFlags
@@ -632,14 +635,6 @@ class SpellMgr
 
     // Accessors (const or static functions)
     public:
-        // Spell affects
-        SpellAffectEntry const*GetSpellAffect(uint32 spellId, uint8 effectId) const
-        {
-            SpellAffectMap::const_iterator itr = mSpellAffectMap.find((spellId<<8) + effectId);
-            if( itr != mSpellAffectMap.end( ) )
-                return &itr->second;
-            return 0;
-        }
 
         bool IsAffectedByMod(SpellEntry const *spellInfo, SpellModifier *mod) const;
 
@@ -894,12 +889,13 @@ class SpellMgr
     public:
         static SpellMgr& Instance();
 
+        void CheckUsedSpells(char const* table);
+
         // Loading data at server startup
         void LoadSpellChains();
         void LoadSpellLearnSkills();
         void LoadSpellLearnSpells();
         void LoadSpellScriptTarget();
-        void LoadSpellAffects();
         void LoadSpellElixirs();
         void LoadSpellProcEvents();
         void LoadSpellBonusess();
@@ -918,7 +914,6 @@ class SpellMgr
         SpellLearnSkillMap mSpellLearnSkills;
         SpellLearnSpellMap mSpellLearnSpells;
         SpellTargetPositionMap mSpellTargetPositions;
-        SpellAffectMap     mSpellAffectMap;
         SpellElixirMap     mSpellElixirs;
         SpellProcEventMap  mSpellProcEventMap;
         SpellBonusMap      mSpellBonusMap;

@@ -473,9 +473,8 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                                     action.morph.modelId = 0;
                                 }
                             }
-
-                            break;
                         }
+                        break;
                     case ACTION_T_SOUND:
                         if (!sSoundEntriesStore.LookupEntry(action.sound.soundId))
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant SoundID %u.", i, j+1, action.sound.soundId);
@@ -660,6 +659,16 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         {
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses wrong sheath state %u.", i, j+1, action.set_sheath.sheath);
                             action.set_sheath.sheath = SHEATH_STATE_UNARMED;
+                        }
+                        break;
+                    case ACTION_T_SET_INVINCIBILITY_HP_LEVEL:
+                        if(action.invincibility_hp_level.is_percent)
+                        {
+                            if(action.invincibility_hp_level.hp_level > 100)
+                            {
+                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses wrong percent value %u.", i, j+1, action.invincibility_hp_level.hp_level);
+                                action.invincibility_hp_level.hp_level = 100;
+                            }
                         }
                         break;
                     case ACTION_T_EVADE:                    //No Params

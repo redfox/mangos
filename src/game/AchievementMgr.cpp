@@ -138,7 +138,7 @@ bool AchievementCriteriaData::IsValid(AchievementCriteriaEntry const* criteria)
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_T_PLAYER_DEAD:
             if (player_dead.own_team_flag > 1)
             {
-                sLog.outErrorDb( "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type %s (%u) have wrong boolean value1 (%u).",
+                sLog.outErrorDb( "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_T_PLAYER_DEAD (%u) have wrong boolean value1 (%u).",
                     criteria->ID, criteria->requiredType,dataType,player_dead.own_team_flag);
                 return false;
             }
@@ -1297,7 +1297,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
         if(IsCompletedCriteria(achievementCriteria,achievement))
             CompletedCriteriaFor(achievement);
 
-        // check again the completeness for SUMM and REQ COUNT achievements, 
+        // check again the completeness for SUMM and REQ COUNT achievements,
         // as they don't depend on the completed criteria but on the sum of the progress of each individual criteria
         if (achievement->flags & ACHIEVEMENT_FLAG_SUMM)
         {
@@ -1513,7 +1513,7 @@ bool AchievementMgr::IsCompletedAchievement(AchievementEntry const* entry)
         return false;
     }
 
-    // Default case - need complete all or 
+    // Default case - need complete all or
     bool completed_all = true;
     for(AchievementCriteriaEntryList::const_iterator itr = cList->begin(); itr != cList->end(); ++itr)
     {
